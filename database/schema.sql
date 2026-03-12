@@ -26,7 +26,7 @@ CREATE TABLE Movie (
     ReleaseDate DATE,
     Runtime INTEGER CHECK (Runtime > 0),
     PosterPath TEXT,
-    AvgRating DECIMAL
+    AvgRating DECIMAL(3,1)
 );
 
 CREATE TABLE Genre (
@@ -68,14 +68,14 @@ CREATE TABLE UserMovieInteraction (
     InteractionID SERIAL PRIMARY KEY,
     UserID INTEGER NOT NULL,
     MovieID INTEGER NOT NULL,
-    ListStatus VARCHAR(25) NOT NULL CHECK (ListStatus IN ('WANT_TO_WATCH', 'WATCHED', 'NONE')),
+    ListStatus VARCHAR(25) NOT NULL CHECK (ListStatus IN ('WANT_TO_WATCH', 'WATCHED')),
     DateAdded DATE NOT NULL DEFAULT CURRENT_DATE,
     DateWatched DATE,
     UNIQUE (UserID, MovieID),
     CHECK (
 	(ListStatus = 'WATCHED' AND DateWatched IS NOT NULL)
 	OR
-	(ListStatus IN ('WANT_TO_WATCH', 'NONE') AND DateWatched IS NULL)
+	(ListStatus = 'WANT_TO_WATCH' AND DateWatched IS NULL)
     ),
     FOREIGN KEY (UserID) REFERENCES "User"(UserID) ON DELETE CASCADE,
     FOREIGN KEY (MovieID) REFERENCES Movie(MovieID) ON DELETE CASCADE
@@ -83,13 +83,11 @@ CREATE TABLE UserMovieInteraction (
 
 CREATE TABLE Review (
     ReviewID SERIAL PRIMARY KEY,
-    UserID INTEGER NOT NULL,
-    MovieID INTEGER NOT NULL,
+    InteractionID INTEGER NOT NULL UNIQUE,
     Rating INTEGER NOT NULL CHECK (Rating BETWEEN 1 and 10),
     Review TEXT,
     DateRated DATE NOT NULL DEFAULT CURRENT_DATE,
-    FOREIGN KEY (UserID) REFERENCES "User"(UserID) ON DELETE CASCADE,
-    FOREIGN KEY (MovieID) REFERENCES Movie(MovieID) ON DELETE CASCADE
+    FOREIGN KEY (InteractionID) REFERENCES UserMovieInteraction(InteractionID) ON DELETE CASCADE
 );
 
 COMMIT;
