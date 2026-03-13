@@ -1,0 +1,93 @@
+BEGIN;
+
+DROP TABLE IF EXISTS UserMovieInteraction;
+DROP TABLE IF EXISTS MovieGenre;
+DROP TABLE IF EXISTS MovieCredit;
+DROP TABLE IF EXISTS Review;
+DROP TABLE IF EXISTS Movie;
+DROP TABLE IF EXISTS Person;
+DROP TABLE IF EXISTS Genre;
+DROP TABLE IF EXISTS "User";
+
+
+CREATE TABLE "User" (
+    UserID SERIAL PRIMARY KEY,
+    Username VARCHAR(50) NOT NULL UNIQUE,
+    Email VARCHAR(255) NOT NULL UNIQUE,
+    PasswordHash VARCHAR(255) NOT NULL,
+    JoinDate DATE NOT NULL DEFAULT CURRENT_DATE,
+    PreferencesJSON JSONB
+);
+
+CREATE TABLE Movie (
+    MovieID INTEGER PRIMARY KEY,
+    Title VARCHAR(255) NOT NULL,
+    Synopsis TEXT,
+    ReleaseDate DATE,
+    Runtime INTEGER CHECK (Runtime > 0),
+    PosterPath TEXT,
+    AvgRating DECIMAL(3,1)
+);
+
+CREATE TABLE Genre (
+    GenreID INTEGER PRIMARY KEY,
+    GenreName VARCHAR(100) NOT NULL UNIQUE
+);
+
+CREATE TABLE Person (
+    PersonID INTEGER PRIMARY KEY,
+    Name VARCHAR(255) NOT NULL,
+    ProfilePicture TEXT
+);
+
+CREATE TABLE MovieGenre (
+    MovieID INTEGER NOT NULL,
+    GenreID INTEGER NOT NULL,
+    PRIMARY KEY (MovieID, GenreID),
+    FOREIGN KEY (MovieID) REFERENCES Movie(MovieID) ON DELETE CASCADE,
+    FOREIGN KEY (GenreID) REFERENCES Genre(GenreID) ON DELETE CASCADE
+);
+
+CREATE TABLE MovieCredit (
+    MovieCreditID VARCHAR(50) PRIMARY KEY,
+    MovieID INTEGER NOT NULL,
+    PersonID INTEGER NOT NULL,
+    CreditType VARCHAR(25) NOT NULL CHECK (CreditType IN ('CAST', 'CREW')),
+    CharacterName VARCHAR(255),
+    Job VARCHAR(100),
+    FOREIGN KEY (MovieID) REFERENCES Movie(MovieID) ON DELETE CASCADE,
+    FOREIGN KEY (PersonID) REFERENCES Person(PersonID) ON DELETE CASCADE,
+    CONSTRAINT check_credit_detail CHECK (
+	(CreditType = 'CAST' AND CharacterName IS NOT NULL)
+	OR
+	(CreditType = 'CREW' AND Job IS NOT NULL)
+    )
+);
+
+CREATE TABLE UserMovieInteraction (
+    InteractionID SERIAL PRIMARY KEY,
+    UserID INTEGER NOT NULL,
+    MovieID INTEGER NOT NULL,
+    ListStatus VARCHAR(25) NOT NULL CHECK (ListStatus IN ('WANT_TO_WATCH', 'WATCHED')),
+    DateAdded DATE NOT NULL DEFAULT CURRENT_DATE,
+    DateWatched DATE,
+    UNIQUE (UserID, MovieID),
+    CHECK (
+	(ListStatus = 'WATCHED' AND DateWatched IS NOT NULL)
+	OR
+	(ListStatus = 'WANT_TO_WATCH' AND DateWatched IS NULL)
+    ),
+    FOREIGN KEY (UserID) REFERENCES "User"(UserID) ON DELETE CASCADE,
+    FOREIGN KEY (MovieID) REFERENCES Movie(MovieID) ON DELETE CASCADE
+);
+
+CREATE TABLE Review (
+    ReviewID SERIAL PRIMARY KEY,
+    InteractionID INTEGER NOT NULL UNIQUE,
+    Rating INTEGER NOT NULL CHECK (Rating BETWEEN 1 and 10),
+    Review TEXT,
+    DateRated DATE NOT NULL DEFAULT CURRENT_DATE,
+    FOREIGN KEY (InteractionID) REFERENCES UserMovieInteraction(InteractionID) ON DELETE CASCADE
+);
+
+COMMIT;
