@@ -152,3 +152,117 @@ img {
     font-size: 1.6rem;
   }
 }
+
+/* Login / Signup */
+.loginPage {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, #eef4fb 0%, #f7f9fc 100%);
+}
+
+.loginCard {
+  background: white;
+  border-radius: 20px;
+  padding: 40px 36px;
+  width: min(420px, calc(100% - 32px));
+  box-shadow: 0 16px 40px rgba(20, 35, 58, 0.12);
+}
+
+.loginTitle {
+  margin: 0 0 6px;
+  font-size: 2rem;
+  color: #173a6b;
+  text-align: center;
+}
+
+.loginSubtitle {
+  margin: 0 0 28px;
+  color: #46627f;
+  text-align: center;
+  font-size: 0.95rem;
+}
+
+.loginForm {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.loginField {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.loginField label {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #13233a;
+}
+
+.loginField input {
+  padding: 12px 14px;
+  border: 1.5px solid #cbd6e2;
+  border-radius: 12px;
+  font-size: 1rem;
+  background: #fbfdff;
+  transition: border-color 0.2s;
+  outline: none;
+}
+
+.loginField input:focus {
+  border-color: #3f74c3;
+}
+
+.loginField input[aria-describedby] {
+  border-color: #b42318;
+}
+
+.loginError {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #b42318;
+  font-weight: 500;
+}
+
+.loginActions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.loginBtnPrimary {
+  padding: 14px;
+  border: none;
+  border-radius: 12px;
+  background: #173a6b;
+  color: white;
+  font-size: 1.05rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.loginBtnPrimary:hover {
+  background: #1e4d91;
+}
+
+.loginBtnSecondary {
+  padding: 10px;
+  border: 1.5px solid #3f74c3;
+  border-radius: 12px;
+  background: transparent;
+  color: #3f74c3;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.loginBtnSecondary:hover {
+  background: #3f74c3;
+  color: white;
+}

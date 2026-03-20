@@ -2,13 +2,29 @@ import React, { useEffect, useState } from "react";
 import Header from "./components/Header.jsx";
 import SearchBar from "./components/SearchBar.jsx";
 import MovieGrid from "./components/MovieGrid.jsx";
+import Login from "./pages/Login.jsx";
 
 export default function App() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+
   const [movies, setMovies] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("Batman");
   const [watchlist, setWatchlist] = useState([]);
+
+  const handleLogin = (username, password) => {
+    // TODO: connect to backend authentication
+    setCurrentUser(username);
+    setIsLoggedIn(true);
+  };
+
+  const handleSignup = (username, password) => {
+    // TODO: connect to backend registration
+    setCurrentUser(username);
+    setIsLoggedIn(true);
+  };
 
 
   const API_KEY = import.meta.env.VITE_OMDB_API_KEY;
@@ -66,6 +82,10 @@ export default function App() {
       return [...prevWatchlist, movie];
     });
   };
+
+  if (!isLoggedIn) {
+    return <Login onLogin={handleLogin} onSignup={handleSignup} />;
+  }
 
   return (
     <div className="page">
