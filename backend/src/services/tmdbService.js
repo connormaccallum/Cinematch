@@ -32,7 +32,7 @@ const getOrFetchMovie = async (movieID) => {
             'INSERT INTO Movie (MovieID, Title, Synopsis, ReleaseDate, Runtime, PosterPath, AvgRating) VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (MovieID) DO NOTHING',
             [movieData.id, movieData.title, movieData.overview, movieData.release_date, movieData.runtime, movieData.poster_path, movieData.vote_average]
         );
-        
+
         // Insert genre and movieGenre data into Genre and MovieGenre tables
         for (const genre of movieData.genres) {
             await db.query(
@@ -70,8 +70,8 @@ const getOrFetchMovie = async (movieID) => {
 
             const creditId = `${movieData.id}-${director.id}-CREW`;
             await db.query(
-                'INSERT INTO MovieCredit (MovieCreditID, MovieID, PersonID, CreditType) VALUES ($1, $2, $3, $4) ON CONFLICT DO NOTHING',
-                [creditId, movieData.id, director.id, 'CREW']
+                'INSERT INTO MovieCredit (MovieCreditID, MovieID, PersonID, CreditType, Job) VALUES ($1, $2, $3, $4, $5) ON CONFLICT DO NOTHING',
+                [creditId, movieData.id, director.id, 'CREW', director.job]
             );
         }
 

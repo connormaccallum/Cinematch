@@ -16,7 +16,7 @@ const pool = new Pool({
 
 // Event listener for connection success and error handling
 pool.on('connect', () => {
-    console.log('Successfully connected to the "${process.env.DB_NAME}" database as user: "${process.env.DB_USER}"');
+    console.log(`Successfully connected to the "${process.env.DB_NAME}" database as user: "${process.env.DB_USER}"`);
 });
 
 pool.on('error', (err) => {
