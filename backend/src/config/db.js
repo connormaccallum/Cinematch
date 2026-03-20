@@ -8,7 +8,7 @@ const pool = new Pool({
     database: process.env.DB_NAME,
     password: process.env.DB_PASSWORD,
     port: process.env.DB_PORT,
-    // Max connections to db and timeouts to db
+    // Max connections and timeout settings for stability 
     max: 10,
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 2000,

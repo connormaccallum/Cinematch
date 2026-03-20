@@ -89,7 +89,28 @@ const getOrFetchMovie = async (movieID) => {
     }
 };
 
-// Export the getOrFetchMovie function for use in other parts of the application
+// search for movies by title
+// results not cached to prevent db bloat
+const searchMovies = async (query) => {
+    try {
+        const response = await axios.get(`${TMDB_BASE_URL}/search/movie`, {
+            params: {
+                query: query
+            },
+            headers: {
+                Authorization: `Bearer ${TMDB_READ_ACCESS_TOKEN}`
+            }
+        });
+
+        return response.data.results;
+    } catch (error) {
+        console.error(`Search service error:`, error.message);
+        throw error;
+    }
+};
+
+// Export service functions for use in other parts of the application
 module.exports = {
-    getOrFetchMovie
+    getOrFetchMovie,
+    searchMovies
 };
