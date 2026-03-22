@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
-import Header from "./components/Header.jsx";
-import SearchBar from "./components/SearchBar.jsx";
-import MovieGrid from "./components/MovieGrid.jsx";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Navbar from "./components/Navbar.jsx";
 import Login from "./pages/Login.jsx";
+import Home from "./pages/Home.jsx";
+import Watchlist from "./pages/Watchlist.jsx";
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -88,30 +89,42 @@ export default function App() {
   }
 
   return (
-    <div className="page">
-      <Header title="Movie Search Engine" searchTerm={searchTerm} />
-        <SearchBar onSearch={handleSearch} />
-
-      <main className="panel">
-            {isLoading ? (
-              <p className="status">Loading...</p>
-            ) : error ? (
-              <p className="status error">{error}</p>
-            ) : movies.length === 0 ? (
-              <p className="status">No movies found.</p>
-            ) : (
-              <MovieGrid movies={movies} addToWatchlist={addToWatchlist} />
-            )}
-
-            <section className="watchlist">
-              <h2>My Watchlist</h2>
-              {watchlist.length === 0 ? (
-                <p>No movies in watchlist yet.</p>
-              ) : (
-                <MovieGrid movies={watchlist} addToWatchlist={addToWatchlist} />
-              )}
-            </section>
-        </main>
-    </div>
+    <BrowserRouter>
+      <Navbar />
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <Home
+              movies={movies}
+              isLoading={isLoading}
+              error={error}
+              onSearch={handleSearch}
+              addToWatchlist={addToWatchlist}
+            />
+          }
+        />
+        <Route
+          path="/watchlist"
+          element={
+            <Watchlist
+              watchlist={watchlist}
+              addToWatchlist={addToWatchlist}
+            />
+          }
+        />
+        <Route
+          path="/reviews"
+          element={
+            <div className="page">
+              <div className="hero">
+                <h1>Reviews</h1>
+                <p>Coming soon!</p>
+              </div>
+            </div>
+          }
+        />
+      </Routes>
+    </BrowserRouter>
   );
 }

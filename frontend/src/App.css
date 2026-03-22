@@ -8,6 +8,50 @@
   box-sizing: border-box;
 }
 
+/* Navbar */
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #173a6b;
+  padding: 0 24px;
+  height: 60px;
+  box-shadow: 0 2px 12px rgba(23, 58, 107, 0.18);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.navLogo a {
+  color: white;
+  font-size: 1.4rem;
+  font-weight: 700;
+  text-decoration: none;
+  letter-spacing: 0.02em;
+}
+
+.navLinks {
+  list-style: none;
+  display: flex;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+}
+
+.navLinks li a {
+  color: white;
+  text-decoration: none;
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: background 0.2s;
+}
+
+.navLinks li a:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
 body {
   margin: 0;
   background: linear-gradient(180deg, #eef4fb 0%, #f7f9fc 100%);
