@@ -1,0 +1,27 @@
+import SearchBar from "../components/SearchBar.jsx";
+import MovieGrid from "../components/MovieGrid.jsx";
+
+export default function Home({ movies, isLoading, error, onSearch, addToWatchlist }) {
+  return (
+    <div className="page">
+      <div className="hero">
+        <h1>Movie Search Engine</h1>
+        <p>Search for your favorite movies and add them to your watchlist!</p>
+      </div>
+
+      <SearchBar onSearch={onSearch} />
+
+      <main className="panel">
+        {isLoading ? (
+          <p className="status">Loading...</p>
+        ) : error ? (
+          <p className="status error">{error}</p>
+        ) : movies.length === 0 ? (
+          <p className="status">No movies found.</p>
+        ) : (
+          <MovieGrid movies={movies} addToWatchlist={addToWatchlist} />
+        )}
+      </main>
+    </div>
+  );
+}
