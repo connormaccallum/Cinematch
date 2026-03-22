@@ -1,28 +1,42 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import MovieGrid from "../components/MovieGrid.jsx";
 import SearchBar from "../components/SearchBar.jsx";
 import { mockMovies } from "../data/mockMovies.js";
 
+function normalizeTmdbMovie(movie, imageBaseUrl) {
+  return {
+    imdbID: String(movie.id),
+    Title: movie.title || movie.name || "Untitled",
+    Year: movie.release_date ? movie.release_date.slice(0, 4) : "N/A",
+    Poster: movie.poster_path
+      ? `${imageBaseUrl}${movie.poster_path}`
+      : "https://via.placeholder.com/300x450?text=No+Poster",
+    Plot: movie.overview || "No description available.",
+    Genre: "N/A",
+    Director: "N/A"
+  };
+}
+
 export default function SearchPage({ addToWatchlist }) {
-  const [movies, setMovies] = useState(mockMovies);
   const [filteredMovies, setFilteredMovies] = useState(mockMovies);
   const [status, setStatus] = useState("Showing placeholder movies.");
-  const API_KEY = import.meta.env.VITE_OMDB_API_KEY;
 
-  useEffect(() => {
-    setMovies(mockMovies);
-    setFilteredMovies(mockMovies);
-  }, []);
+  const TMDB_TOKEN = import.meta.env.VITE_TMDB_READ_ACCESS_TOKEN;
+  const TMDB_BASE_URL =
+    import.meta.env.VITE_TMDB_BASE_URL || "https://api.themoviedb.org/3";
+  const TMDB_IMAGE_BASE_URL =
+    import.meta.env.VITE_TMDB_IMAGE_BASE_URL ||
+    "https://image.tmdb.org/t/p/w500";
 
   const handleSearch = async (query) => {
     if (!query) {
-      setFilteredMovies(movies);
+      setFilteredMovies(mockMovies);
       setStatus("Showing all movies.");
       return;
     }
 
-    if (!API_KEY || API_KEY === "ENTER_OMDB_API_KEY_HERE") {
-      const localResults = movies.filter((movie) =>
+    if (!TMDB_TOKEN) {
+      const localResults = mockMovies.filter((movie) =>
         movie.Title.toLowerCase().includes(query.toLowerCase())
       );
       setFilteredMovies(localResults);
@@ -32,23 +46,36 @@ export default function SearchPage({ addToWatchlist }) {
 
     try {
       const response = await fetch(
-        `https://www.omdbapi.com/?s=${encodeURIComponent(query)}&apikey=${API_KEY}`
+        `${TMDB_BASE_URL}/search/movie?query=${encodeURIComponent(
+          query
+        )}&include_adult=false&language=en-US&page=1`,
+        {
+          headers: {
+            Authorization: `Bearer ${TMDB_TOKEN}`,
+            accept: "application/json"
+          }
+        }
       );
+
       const data = await response.json();
 
-      if (data.Response === "True") {
-        setFilteredMovies(data.Search);
-        setStatus(`Showing results for "${query}".`);
+      if (data.results && data.results.length > 0) {
+        setFilteredMovies(
+          data.results.map((movie) =>
+            normalizeTmdbMovie(movie, TMDB_IMAGE_BASE_URL)
+          )
+        );
+        setStatus(`Showing TMDb results for "${query}".`);
       } else {
         setFilteredMovies([]);
         setStatus("No movies found.");
       }
     } catch {
-      const localResults = movies.filter((movie) =>
+      const localResults = mockMovies.filter((movie) =>
         movie.Title.toLowerCase().includes(query.toLowerCase())
       );
       setFilteredMovies(localResults);
-      setStatus("Could not reach API. Using placeholder data.");
+      setStatus("Could not reach TMDb. Using placeholder data.");
     }
   };
 
