@@ -4,8 +4,177 @@
   background: #edf2f7;
 }
 
-* {
+* {.0
   box-sizing: border-box;
+}
+
+
+/* Movie Details */
+.movieDetailsTop {
+  display: grid;
+  grid-template-columns: 1fr 220px;
+  gap: 24px;
+  margin-top: 20px;
+}
+
+.movieLargePoster {
+  border-radius: 12px;
+  overflow: hidden;
+  margin: 12px 0;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.titleStars {
+  color: #bbb;
+}
+
+.infoBlock {
+  margin-top: 20px;
+}
+
+.detailActions {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.reviewBox textarea {
+  width: 100%;
+  border-radius: 10px;
+  padding: 10px;
+  border: 1px solid #cbd6e2;
+  margin-top: 10px;
+}
+
+/* Sidebar */
+.movieSidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sidebarCard {
+  text-align: center;
+}
+
+.sidebarThumb {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* Watchlist (if missing styles) */
+.savedListRow {
+  display: grid;
+  grid-template-columns: 80px 1fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid #e0e7f0;
+  border-radius: 12px;
+  background: white;
+  margin-bottom: 10px;
+}
+
+.savedThumb img {
+  border-radius: 8px;
+}
+
+/* Reviews page */
+.reviewsPagePanel {
+  margin-top: 20px;
+}
+
+.reviewCard {
+  border-bottom: 1px solid #e0e7f0;
+  padding: 12px 0;
+}
+
+/* Profile */
+.profileLayout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 24px;
+  margin-top: 20px;
+}
+
+.profileSavedColumn {
+  background: white;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid #e0e7f0;
+}
+
+.profileSavedItem {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.profileSavedThumb {
+  width: 50px;
+  height: 50px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.profileInfoCard {
+  display: flex;
+  justify-content: space-between;
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid #e0e7f0;
+}
+
+.profileAvatarCircle {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: #dbe5f1;
+}
+
+.reviewsLargePanel {
+  margin-top: 20px;
+  background: white;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid #e0e7f0;
+}
+
+/* Buttons (reuse your style but ensure consistency) */
+.actionBtn {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: none;
+  background: #3f74c3;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.deleteBtn {
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: none;
+  background: #b42318;
+  color: white;
+  cursor: pointer;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .movieDetailsTop {
+    grid-template-columns: 1fr;
+  }
+
+  .profileLayout {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* Navbar */
