@@ -4,6 +4,25 @@ import Navbar from "./components/Navbar.jsx";
 import Login from "./pages/Login.jsx";
 import Home from "./pages/Home.jsx";
 import Watchlist from "./pages/Watchlist.jsx";
+import SearchPage from "./pages/SearchPage.jsx";
+import MovieDetails from "./pages/MovieDetails.jsx";
+import Reviews from "./pages/Reviews.jsx";
+import Profile from "./pages/Profile.jsx";
+import { mockMovies } from "./data/mockMovies.js";
+
+function normalizeTmdbMovie(movie, imageBaseUrl) {
+  return {
+    imdbID: String(movie.id),
+    Title: movie.title || movie.name || "Untitled",
+    Year: movie.release_date ? movie.release_date.slice(0, 4) : "N/A",
+    Poster: movie.poster_path
+      ? `${imageBaseUrl}${movie.poster_path}`
+      : "https://via.placeholder.com/300x450?text=No+Poster",
+    Plot: movie.overview || "No description available.",
+    Genre: "N/A",
+    Director: "N/A"
+  };
+}
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -14,51 +33,79 @@ export default function App() {
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("Batman");
   const [watchlist, setWatchlist] = useState([]);
+  const [reviews, setReviews] = useState([
+    {
+      id: 1,
+      movieId: "27205",
+      movieTitle: "Inception",
+      text: "Great visuals and a very interesting concept.",
+      rating: 4
+    }
+  ]);
 
   const handleLogin = (username, password) => {
-    // TODO: connect to backend authentication
     setCurrentUser(username);
     setIsLoggedIn(true);
   };
 
   const handleSignup = (username, password) => {
-    // TODO: connect to backend registration
     setCurrentUser(username);
     setIsLoggedIn(true);
   };
 
-
-  const API_KEY = import.meta.env.VITE_OMDB_API_KEY;
-
+  const TMDB_TOKEN = import.meta.env.VITE_TMDB_READ_ACCESS_TOKEN;
+  const TMDB_BASE_URL =
+    import.meta.env.VITE_TMDB_BASE_URL || "https://api.themoviedb.org/3";
+  const TMDB_IMAGE_BASE_URL =
+    import.meta.env.VITE_TMDB_IMAGE_BASE_URL ||
+    "https://image.tmdb.org/t/p/w500";
 
   const fetchMovies = async (query) => {
     setIsLoading(true);
     setError("");
 
-    if (!API_KEY || API_KEY === "ENTER_OMDB_API_KEY_HERE") {
-      setMovies([]);
-      setError("No API key provided.");
+    if (!TMDB_TOKEN) {
+      const filteredMockMovies = mockMovies.filter((movie) =>
+        movie.Title.toLowerCase().includes(query.toLowerCase())
+      );
+      setMovies(filteredMockMovies.length ? filteredMockMovies : mockMovies);
+      setError("Using placeholder movie data.");
       setIsLoading(false);
       return;
     }
 
     try {
-      const url =
-        `https://www.omdbapi.com/?s=${encodeURIComponent(query)}&apikey=${API_KEY}`;
+      const url = `${TMDB_BASE_URL}/search/movie?query=${encodeURIComponent(
+        query
+      )}&include_adult=false&language=en-US&page=1`;
 
-      const response = await fetch(url);
+      const response = await fetch(url, {
+        headers: {
+          Authorization: `Bearer ${TMDB_TOKEN}`,
+          accept: "application/json"
+        }
+      });
+
       const data = await response.json();
 
-      if (data.Response === "True") {
-        setMovies(data.Search);
+      if (data.results && data.results.length > 0) {
+        const normalizedMovies = data.results.map((movie) =>
+          normalizeTmdbMovie(movie, TMDB_IMAGE_BASE_URL)
+        );
+        setMovies(normalizedMovies);
       } else {
-        setMovies([]);
-        setError(data.Error || "No movies found.");
+        const filteredMockMovies = mockMovies.filter((movie) =>
+          movie.Title.toLowerCase().includes(query.toLowerCase())
+        );
+        setMovies(filteredMockMovies.length ? filteredMockMovies : mockMovies);
+        setError("No TMDb results found. Using placeholder movie data.");
       }
-
     } catch (err) {
-      setError("Failed to fetch movies.");
-      setMovies([]);
+      const filteredMockMovies = mockMovies.filter((movie) =>
+        movie.Title.toLowerCase().includes(query.toLowerCase())
+      );
+      setMovies(filteredMockMovies.length ? filteredMockMovies : mockMovies);
+      setError("Failed to fetch TMDb movies. Using placeholder movie data.");
     } finally {
       setIsLoading(false);
     }
@@ -84,6 +131,23 @@ export default function App() {
     });
   };
 
+  const removeFromWatchlist = (movieId) => {
+    setWatchlist((prevWatchlist) =>
+      prevWatchlist.filter((movie) => movie.imdbID !== movieId)
+    );
+  };
+
+  const addReview = (movie, text, rating) => {
+    const newReview = {
+      id: Date.now(),
+      movieId: movie.imdbID,
+      movieTitle: movie.Title,
+      text,
+      rating
+    };
+    setReviews((prevReviews) => [newReview, ...prevReviews]);
+  };
+
   if (!isLoggedIn) {
     return <Login onLogin={handleLogin} onSignup={handleSignup} />;
   }
@@ -105,26 +169,42 @@ export default function App() {
           }
         />
         <Route
+          path="/search"
+          element={<SearchPage addToWatchlist={addToWatchlist} />}
+        />
+        <Route
+          path="/movie/:id"
+          element={
+            <MovieDetails
+              addToWatchlist={addToWatchlist}
+              addReview={addReview}
+              watchlist={watchlist}
+            />
+          }
+        />
+        <Route
           path="/watchlist"
           element={
             <Watchlist
               watchlist={watchlist}
               addToWatchlist={addToWatchlist}
+              removeFromWatchlist={removeFromWatchlist}
             />
           }
         />
+        <Route path="/reviews" element={<Reviews reviews={reviews} />} />
         <Route
-          path="/reviews"
+          path="/profile"
           element={
-            <div className="page">
-              <div className="hero">
-                <h1>Reviews</h1>
-                <p>Coming soon!</p>
-              </div>
-            </div>
+            <Profile
+              currentUser={currentUser}
+              watchlist={watchlist}
+              reviews={reviews}
+            />
           }
         />
       </Routes>
     </BrowserRouter>
   );
 }
+
