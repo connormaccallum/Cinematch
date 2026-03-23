@@ -10,6 +10,7 @@ export default function Navbar() {
         <li><Link to="/">Home</Link></li>
         <li><Link to="/watchlist">Watchlist</Link></li>
         <li><Link to="/reviews">Reviews</Link></li>
+        <li><Link to="/profile">Profile</Link></li>
       </ul>
     </nav>
   );
