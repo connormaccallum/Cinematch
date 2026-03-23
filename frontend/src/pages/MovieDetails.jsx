@@ -1,25 +1,89 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { mockMovies } from "../data/mockMovies.js";
-import MovieGrid from "../components/MovieGrid.jsx";
+
+function normalizeTmdbMovie(movie, imageBaseUrl) {
+  return {
+    imdbID: String(movie.id),
+    Title: movie.title || movie.name || "Untitled",
+    Year: movie.release_date ? movie.release_date.slice(0, 4) : "N/A",
+    Poster: movie.poster_path
+      ? `${imageBaseUrl}${movie.poster_path}`
+      : "https://placehold.co/300x450?text=No+Poster",
+    Plot: movie.overview || "No description available.",
+    Genre: movie.genres ? movie.genres.map((g) => g.name).join(", ") : "N/A",
+    Director: "N/A"
+  };
+}
 
 export default function MovieDetails({ addToWatchlist, addReview, watchlist }) {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const movie = useMemo(
-    () => mockMovies.find((item) => item.imdbID === id) || mockMovies[0],
-    [id]
-  );
+  const [movie, setMovie] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const relatedMovies = useMemo(
-    () => mockMovies.filter((item) => item.imdbID !== movie.imdbID).slice(0, 4),
-    [movie]
-  );
+  const TMDB_TOKEN = import.meta.env.VITE_TMDB_READ_ACCESS_TOKEN;
+  const TMDB_BASE_URL =
+    import.meta.env.VITE_TMDB_BASE_URL || "https://api.themoviedb.org/3";
+  const TMDB_IMAGE_BASE_URL =
+    import.meta.env.VITE_TMDB_IMAGE_BASE_URL ||
+    "https://image.tmdb.org/t/p/w500";
+
+  useEffect(() => {
+    const fetchMovie = async () => {
+      setIsLoading(true);
+
+      // Try mock movies first (for mock IDs like "tt1375666")
+      const mockMatch = mockMovies.find((item) => item.imdbID === id);
+      if (mockMatch) {
+        setMovie(mockMatch);
+        setIsLoading(false);
+        return;
+      }
+
+      // Fetch from TMDB API
+      if (TMDB_TOKEN) {
+        try {
+          const response = await fetch(
+            `${TMDB_BASE_URL}/movie/${encodeURIComponent(id)}?language=en-US`,
+            {
+              headers: {
+                Authorization: `Bearer ${TMDB_TOKEN}`,
+                accept: "application/json"
+              }
+            }
+          );
+          if (response.ok) {
+            const data = await response.json();
+            setMovie(normalizeTmdbMovie(data, TMDB_IMAGE_BASE_URL));
+            setIsLoading(false);
+            return;
+          }
+        } catch {
+          // Fall through to fallback
+        }
+      }
+
+      // Fallback
+      setMovie(mockMovies[0]);
+      setIsLoading(false);
+    };
+
+    fetchMovie();
+  }, [id]);
 
   const [reviewText, setReviewText] = useState("");
   const [savedMessage, setSavedMessage] = useState("");
   const [reviewMessage, setReviewMessage] = useState("");
+
+  if (isLoading || !movie) {
+    return (
+      <div className="page">
+        <p className="status">Loading movie details...</p>
+      </div>
+    );
+  }
 
   const isSaved = watchlist.some((item) => item.imdbID === movie.imdbID);
 
@@ -96,19 +160,12 @@ export default function MovieDetails({ addToWatchlist, addReview, watchlist }) {
         </div>
 
         <aside className="movieSidebar">
-          {[movie, ...relatedMovies.slice(0, 2)].map((item) => (
-            <div className="sidebarCard" key={item.imdbID}>
-              <div className="sidebarThumb">
-                <img src={item.Poster} alt={item.Title} />
-              </div>
-              <p>MOVIE INFORMATION</p>
+          <div className="sidebarCard">
+            <div className="sidebarThumb">
+              <img src={movie.Poster} alt={movie.Title} />
             </div>
-          ))}
+          </div>
         </aside>
-      </section>
-
-      <section className="relatedSection">
-        <MovieGrid movies={relatedMovies} compact />
       </section>
     </main>
   );

@@ -4,7 +4,6 @@ import Navbar from "./components/Navbar.jsx";
 import Login from "./pages/Login.jsx";
 import Home from "./pages/Home.jsx";
 import Watchlist from "./pages/Watchlist.jsx";
-import SearchPage from "./pages/SearchPage.jsx";
 import MovieDetails from "./pages/MovieDetails.jsx";
 import Reviews from "./pages/Reviews.jsx";
 import Profile from "./pages/Profile.jsx";
@@ -17,7 +16,7 @@ function normalizeTmdbMovie(movie, imageBaseUrl) {
     Year: movie.release_date ? movie.release_date.slice(0, 4) : "N/A",
     Poster: movie.poster_path
       ? `${imageBaseUrl}${movie.poster_path}`
-      : "https://via.placeholder.com/300x450?text=No+Poster",
+      : "https://placehold.co/300x450?text=No+Poster",
     Plot: movie.overview || "No description available.",
     Genre: "N/A",
     Director: "N/A"
@@ -168,10 +167,6 @@ export default function App() {
               addToWatchlist={addToWatchlist}
             />
           }
-        />
-        <Route
-          path="/search"
-          element={<SearchPage addToWatchlist={addToWatchlist} />}
         />
         <Route
           path="/movie/:id"

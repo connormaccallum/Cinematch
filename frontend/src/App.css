@@ -4,7 +4,7 @@
   background: #edf2f7;
 }
 
-* {.0
+* {
   box-sizing: border-box;
 }
 
@@ -308,7 +308,7 @@ img {
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
   gap: 18px;
 }
 
@@ -318,6 +318,20 @@ img {
   overflow: hidden;
   background: #fbfdff;
   box-shadow: 0 6px 16px rgba(20, 35, 58, 0.06);
+}
+
+.cardLink {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.cardLink:hover {
+  opacity: 0.85;
+}
+
+.cardActions {
+  padding: 0 14px 14px;
 }
 
 .card img,
