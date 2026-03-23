@@ -91,11 +91,12 @@ const getOrFetchMovie = async (movieID) => {
 
 // search for movies by title
 // results not cached to prevent db bloat
-const searchMovies = async (query) => {
+const searchMovies = async (query, page = 1) => {
     try {
         const response = await axios.get(`${TMDB_BASE_URL}/search/movie`, {
             params: {
-                query: query
+                query: query,
+                page: page
             },
             headers: {
                 Authorization: `Bearer ${TMDB_READ_ACCESS_TOKEN}`
@@ -109,8 +110,29 @@ const searchMovies = async (query) => {
     }
 };
 
+// display trending movies for the week
+// not cached to prevent db bloat and allow current data
+const getTrendingMovies = async (page = 1) => {
+    try {
+        const response = await axios.get(`${TMDB_BASE_URL}/trending/movie/week`, {
+            params: {
+                page: page
+            },
+            headers: {
+                Authorization: `Bearer ${TMDB_READ_ACCESS_TOKEN}`
+            }
+        });
+
+        return response.data.results;
+    } catch (error) {
+        console.error(`Trending movies service error:`, error.message);
+        throw error;
+    }
+};
+
 // Export service functions for use in other parts of the application
 module.exports = {
     getOrFetchMovie,
-    searchMovies
+    searchMovies,
+    getTrendingMovies
 };

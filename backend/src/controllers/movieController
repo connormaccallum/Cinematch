@@ -25,7 +25,7 @@ const getMovieDetails = async (req, res) => {
 const searchMovies = async (req, res) => {
     try {
         // extract search query from query string
-        const { q: query } = req.query;
+        const { q: query, page } = req.query;
 
         // validate that query is provided
         if (!query) {
@@ -33,15 +33,31 @@ const searchMovies = async (req, res) => {
         }
 
         // fetch search results from TMDb
-        const results = await tmdbService.searchMovies(query);
+        const results = await tmdbService.searchMovies(query, page || 1);
         res.status(200).json(results);
     } catch (error) {
         res.status(500).json({ error: 'Failed to search for movies' });
     }
 };
 
+// coordinate between request and service to return trending movies
+const getTrendingMovies = async (req, res) => {
+    try {
+        // extract page number from query string for pagination
+        const { page } = req.query;
+
+        // fetch trending movies from TMDb
+        const movies = await tmdbService.getTrendingMovies(page || 1);
+        res.status(200).json(movies);
+    } catch (error) {
+        console.error('Error in getTrendingMovies:', error.message);
+        res.status(500).json({ error: 'Failed to fetch trending movies' });
+    }
+};
+
 // export controller functions for use in routes
 module.exports = {
     getMovieDetails,
-    searchMovies
+    searchMovies,
+    getTrendingMovies
 };
