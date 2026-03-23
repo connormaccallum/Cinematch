@@ -53,6 +53,7 @@ export default function App() {
     setIsLoggedIn(true);
   };
 
+  // TODO: Adjust logic to not expose token in frontend
   const TMDB_TOKEN = import.meta.env.VITE_TMDB_READ_ACCESS_TOKEN;
   const TMDB_BASE_URL =
     import.meta.env.VITE_TMDB_BASE_URL || "https://api.themoviedb.org/3";
