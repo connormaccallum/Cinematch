@@ -5,8 +5,11 @@ export default function Profile({ currentUser, watchlist, reviews }) {
   const savedPreview = watchlist.slice(0, 5);
 
   return (
-    <main className="pageSection">
-      <h1 className="profileGreeting">Hello, {currentUser}</h1>
+    <div className="page">
+      <div className="hero">
+        <h1>Hello, {currentUser}</h1>
+        <p>Your profile and activity at a glance.</p>
+      </div>
 
       <section className="profileLayout">
         <aside className="profileSavedColumn">
@@ -16,15 +19,14 @@ export default function Profile({ currentUser, watchlist, reviews }) {
             <p>No saved titles yet.</p>
           ) : (
             savedPreview.map((movie) => (
-              <div className="profileSavedItem" key={movie.imdbID}>
-                <div className="profileSavedThumb">
+              <Link to={`/movie/${movie.imdbID}`} className="profileMovieCard" key={movie.imdbID}>
+                {movie.Poster ? (
                   <img src={movie.Poster} alt={movie.Title} />
-                </div>
-                <div>
-                  <p className="profileMiniTitle">{movie.Title}</p>
-                  <Link to={`/movie/${movie.imdbID}`}>View</Link>
-                </div>
-              </div>
+                ) : (
+                  <div className="profileMovieNoPoster">No Poster</div>
+                )}
+                <p className="profileMovieCardTitle">{movie.Title}</p>
+              </Link>
             ))
           )}
         </aside>
@@ -47,15 +49,24 @@ export default function Profile({ currentUser, watchlist, reviews }) {
               <p>No reviews written yet.</p>
             ) : (
               reviews.map((review) => (
-                <article className="profileReviewItem" key={review.id}>
-                  <strong>{review.movieTitle}</strong>
-                  <p>{review.text}</p>
+                <article className="reviewCardStyled" key={review.id}>
+                  {review.moviePoster && (
+                    <div className="reviewCardPoster">
+                      <img src={review.moviePoster} alt={review.movieTitle} />
+                    </div>
+                  )}
+                  <div className="reviewCardBody">
+                    <h3>{review.movieTitle}</h3>
+                    <p className="reviewUser">{review.username || "Anonymous"}</p>
+                    <p className="starRow">{"★".repeat(review.rating)}{"☆".repeat(5 - review.rating)}</p>
+                    <p>{review.text}</p>
+                  </div>
                 </article>
               ))
             )}
           </section>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

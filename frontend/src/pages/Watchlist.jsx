@@ -8,7 +8,7 @@ export default function Watchlist({ watchlist, addToWatchlist }) {
         <p>Movies you've saved to watch later.</p>
       </div>
 
-      <main className="panel">
+      <main className="panel" style={{ marginTop: "20px" }}>
         {watchlist.length === 0 ? (
           <p className="status">No movies in your watchlist yet. Search for movies and add them!</p>
         ) : (
