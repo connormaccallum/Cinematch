@@ -119,14 +119,15 @@ export default function App() {
     );
   };
 
-  const addReview = (movie, text, rating) => {
+  const addReview = (movie, text, rating, username) => {
     const newReview = {
       id: Date.now(),
       movieId: movie.imdbID,
       movieTitle: movie.Title,
       moviePoster: movie.Poster,
       text,
-      rating
+      rating,
+      username: username || currentUser || "Anonymous"
     };
     setReviews((prevReviews) => [newReview, ...prevReviews]);
   };
@@ -159,6 +160,7 @@ export default function App() {
               addReview={addReview}
               watchlist={watchlist}
               reviews={reviews}
+              currentUser={currentUser}
             />
           }
         />

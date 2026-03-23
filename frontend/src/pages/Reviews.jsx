@@ -21,6 +21,7 @@ export default function Reviews({ reviews }) {
               )}
               <div className="reviewCardBody">
                 <h3>{review.movieTitle}</h3>
+                <p className="reviewUser">{review.username || "Anonymous"}</p>
                 <p className="starRow">{"★".repeat(review.rating)}{"☆".repeat(5 - review.rating)}</p>
                 <p>{review.text}</p>
               </div>

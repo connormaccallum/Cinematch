@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
 function normalizeTmdbMovie(movie, imageBaseUrl) {
+  const director = movie.credits?.crew?.find((c) => c.job === "Director");
   return {
     imdbID: String(movie.id),
     Title: movie.title || movie.name || "Untitled",
@@ -11,13 +12,12 @@ function normalizeTmdbMovie(movie, imageBaseUrl) {
       : "",
     Plot: movie.overview || "No description available.",
     Genre: movie.genres ? movie.genres.map((g) => g.name).join(", ") : "N/A",
-    Director: "N/A"
+    Director: director ? director.name : "N/A"
   };
 }
 
-export default function MovieDetails({ addToWatchlist, addReview, watchlist, reviews }) {
+export default function MovieDetails({ addToWatchlist, addReview, watchlist, reviews, currentUser }) {
   const { id } = useParams();
-  const navigate = useNavigate();
 
   const [movie, setMovie] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -43,7 +43,7 @@ export default function MovieDetails({ addToWatchlist, addReview, watchlist, rev
 
       try {
         const response = await fetch(
-          `${TMDB_BASE_URL}/movie/${encodeURIComponent(id)}?language=en-US`,
+          `${TMDB_BASE_URL}/movie/${encodeURIComponent(id)}?language=en-US&append_to_response=credits`,
           {
             headers: {
               Authorization: `Bearer ${TMDB_TOKEN}`,
@@ -68,6 +68,7 @@ export default function MovieDetails({ addToWatchlist, addReview, watchlist, rev
   }, [id]);
 
   const [reviewText, setReviewText] = useState("");
+  const [reviewRating, setReviewRating] = useState(0);
   const [savedMessage, setSavedMessage] = useState("");
   const [reviewMessage, setReviewMessage] = useState("");
 
@@ -100,44 +101,61 @@ export default function MovieDetails({ addToWatchlist, addReview, watchlist, rev
       setReviewMessage("Enter a short review first.");
       return;
     }
+    if (reviewRating === 0) {
+      setReviewMessage("Please select a star rating.");
+      return;
+    }
 
-    addReview(movie, reviewText, 4);
+    addReview(movie, reviewText, reviewRating, currentUser);
     setReviewText("");
+    setReviewRating(0);
     setReviewMessage("Review added.");
   };
 
   return (
     <div className="page">
       <div className="movieMainColumn">
-        <div className="titleRow">
-          <h1>{movie.Title}</h1>
+        <div className="movieDetailHeader">
+          {movie.Poster && (
+            <div className="movieDetailPoster">
+              <img src={movie.Poster} alt={movie.Title} />
+            </div>
+          )}
+          <div className="movieDetailInfo">
+            <h1>{movie.Title}</h1>
+            {movie.Year && movie.Year !== "N/A" && <p><strong>Year:</strong> {movie.Year}</p>}
+            {movie.Genre && movie.Genre !== "N/A" && <p><strong>Genre:</strong> {movie.Genre}</p>}
+            {movie.Director && movie.Director !== "N/A" && <p><strong>Director:</strong> {movie.Director}</p>}
+            <div className="detailActions">
+              <button className="actionBtn" type="button" onClick={handleSave}>
+                {isSaved ? "Saved" : "Save to List"}
+              </button>
+            </div>
+            {savedMessage && <p className="successText">{savedMessage}</p>}
+          </div>
         </div>
 
-        {movie.Poster && (
-          <div className="movieLargePoster">
-            <img src={movie.Poster} alt={movie.Title} />
-          </div>
+        {movie.Plot && movie.Plot !== "No description available." && (
+          <section className="infoBlock">
+            <h2>Description</h2>
+            <p>{movie.Plot}</p>
+          </section>
         )}
-
-        <section className="infoBlock">
-          <h2>Movie Information</h2>
-          {movie.Year && movie.Year !== "N/A" && <p><strong>Year:</strong> {movie.Year}</p>}
-          {movie.Genre && movie.Genre !== "N/A" && <p><strong>Genre:</strong> {movie.Genre}</p>}
-          {movie.Director && movie.Director !== "N/A" && <p><strong>Director:</strong> {movie.Director}</p>}
-          {movie.Plot && movie.Plot !== "No description available." && <p>{movie.Plot}</p>}
-        </section>
-
-        <section className="infoBlock">
-          <div className="detailActions">
-            <button className="actionBtn" type="button" onClick={handleSave}>
-              {isSaved ? "Saved" : "Save to List"}
-            </button>
-          </div>
-          {savedMessage && <p className="successText">{savedMessage}</p>}
-        </section>
 
         <section className="reviewBox">
           <h2>Leave a Review</h2>
+          <div className="starPicker">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <button
+                key={star}
+                type="button"
+                className={`starPickerBtn ${star <= reviewRating ? "starFilled" : ""}`}
+                onClick={() => setReviewRating(star)}
+              >
+                {star <= reviewRating ? "★" : "☆"}
+              </button>
+            ))}
+          </div>
           <textarea
             value={reviewText}
             onChange={(e) => setReviewText(e.target.value)}
@@ -157,7 +175,7 @@ export default function MovieDetails({ addToWatchlist, addReview, watchlist, rev
             movieReviews.map((review) => (
               <article className="reviewCardStyled" key={review.id}>
                 <div className="reviewCardBody">
-                  <h3>{review.movieTitle}</h3>
+                  <p className="reviewUser">{review.username || "Anonymous"}</p>
                   <p className="starRow">{"★".repeat(review.rating)}{"☆".repeat(5 - review.rating)}</p>
                   <p>{review.text}</p>
                 </div>

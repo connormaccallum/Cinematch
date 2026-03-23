@@ -10,27 +10,72 @@
 
 
 /* Movie Details */
-.movieDetailsTop {
-  display: grid;
-  grid-template-columns: 1fr 220px;
+.movieDetailHeader {
+  display: flex;
   gap: 24px;
   margin-top: 20px;
 }
 
-.movieLargePoster {
+.movieDetailPoster {
+  flex-shrink: 0;
+  width: 220px;
   border-radius: 12px;
   overflow: hidden;
-  margin: 12px 0;
 }
 
-.titleRow {
+.movieDetailPoster img {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+}
+
+.movieDetailInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.movieDetailInfo h1 {
+  margin: 0 0 12px;
+  font-size: 1.8rem;
+}
+
+.movieDetailInfo p {
+  margin: 0 0 6px;
+  color: #46627f;
+  line-height: 1.5;
+}
+
+/* Star Picker */
+.starPicker {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  gap: 4px;
+  margin-bottom: 8px;
 }
 
-.titleStars {
-  color: #bbb;
+.starPickerBtn {
+  background: none;
+  border: none;
+  font-size: 1.6rem;
+  cursor: pointer;
+  color: #ccc;
+  padding: 2px 4px;
+  transition: color 0.15s;
+}
+
+.starPickerBtn.starFilled {
+  color: #e8a317;
+}
+
+.starPickerBtn:hover {
+  color: #e8a317;
+}
+
+/* Review username */
+.reviewUser {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: #173a6b;
+  margin: 0 0 4px !important;
 }
 
 .infoBlock {
@@ -268,8 +313,12 @@
 
 /* Responsive */
 @media (max-width: 768px) {
-  .movieDetailsTop {
-    grid-template-columns: 1fr;
+  .movieDetailHeader {
+    flex-direction: column;
+  }
+
+  .movieDetailPoster {
+    width: 160px;
   }
 
   .profileLayout {
