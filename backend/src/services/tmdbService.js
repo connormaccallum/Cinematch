@@ -8,11 +8,31 @@ const TMDB_READ_ACCESS_TOKEN = process.env.TMDB_READ_ACCESS_TOKEN;
 const getOrFetchMovie = async (movieID) => {
     try {
         // Check if movie exists in local db
-        const localMovie = await db.query('SELECT * FROM Movie WHERE MovieID = $1', [movieID]);
+        const localMovie = await db.query(`
+            SELECT m.*, 
+            ARRAY_AGG(DISTINCT g.GenreName) AS genres,
+            (SELECT JSON_AGG(CAST_LIST) FROM (
+                SELECT p.Name as name, mc.CharacterName as character, p.ProfilePicture as profilePath
+                FROM MovieCredit mc
+                JOIN Person p ON mc.PersonID = p.PersonID
+                WHERE mc.MovieID = m.MovieID AND mc.CreditType = 'CAST'
+                LIMIT 10
+            ) CAST_LIST) AS cast,
+            (SELECT JSON_BUILD_OBJECT('name', p.Name, 'profilePicture', p.ProfilePicture)
+                FROM MovieCredit mc
+                JOIN Person p ON mc.PersonID = p.PersonID
+                WHERE mc.MovieID = m.MovieID AND mc.CreditType = 'CREW' AND mc.Job = 'Director'
+                LIMIT 1) AS director
+            FROM Movie m
+            LEFT JOIN MovieGenre mg ON m.MovieID = mg.MovieID
+            LEFT JOIN Genre g ON mg.GenreID = g.GenreID
+            WHERE m.MovieID = $1
+            GROUP BY m.MovieID`, [movieID]
+        );
 
         if (localMovie.rows.length > 0) {
             console.log(`Movie ${movieID} found in local database`);
-            return localMovie.rows[0];
+            return formatMovie(localMovie.rows[0]);
         }
 
         // If not found, fetch from TMDb
@@ -78,7 +98,7 @@ const getOrFetchMovie = async (movieID) => {
         // Commit transaction after all inserts
         await db.query('COMMIT');
         console.log(`Movie ${movieID} fetched and stored in local database`);
-        return movieData;
+        return formatMovie(movieData);
     }
 
     // Handle any errors by rolling back transaction and logging the error
@@ -103,7 +123,16 @@ const searchMovies = async (query, page = 1) => {
             }
         });
 
-        return response.data.results;
+        const normalizedResults = response.data.results.map(movie =>
+            formatMovie(movie)
+        );
+
+
+        return {
+            ...response.data,
+            results: normalizedResults
+        };
+
     } catch (error) {
         console.error(`Search service error:`, error.message);
         throw error;
@@ -123,10 +152,33 @@ const getTrendingMovies = async (page = 1) => {
             }
         });
 
-        return response.data.results;
+        const normalizedResults = response.data.results.map(movie =>
+            formatMovie(movie)
+        );
+
+        return {
+            ...response.data,
+            results: normalizedResults
+        };
+
     } catch (error) {
         console.error(`Trending movies service error:`, error.message);
         throw error;
+    }
+};
+
+const formatMovie = (movieData) => {
+    return {
+        id: movieData.MovieID || movieData.id,
+        title: movieData.Title || movieData.title,
+        synopsis: movieData.Synopsis || movieData.overview,
+        releaseDate: movieData.ReleaseDate || movieData.release_date,
+        runtime: movieData.Runtime || movieData.runtime,
+        posterPath: movieData.PosterPath || movieData.poster_path,
+        avgRating: movieData.AvgRating || movieData.vote_average,
+        genres: movieData.genres || [],
+        cast: movieData.cast || [],
+        director: movieData.director || null
     }
 };
 
