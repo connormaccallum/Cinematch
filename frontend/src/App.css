@@ -87,11 +87,82 @@
 /* Reviews page */
 .reviewsPagePanel {
   margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
-.reviewCard {
-  border-bottom: 1px solid #e0e7f0;
-  padding: 12px 0;
+.reviewCardStyled {
+  display: flex;
+  gap: 16px;
+  background: white;
+  border-radius: 16px;
+  border: 1px solid #e0e7f0;
+  padding: 16px;
+  box-shadow: 0 4px 12px rgba(20, 35, 58, 0.06);
+}
+
+.reviewCardPoster {
+  flex-shrink: 0;
+  width: 80px;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.reviewCardPoster img {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+}
+
+.reviewCardBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.reviewCardBody h3 {
+  margin: 0 0 6px;
+  font-size: 1.05rem;
+}
+
+.reviewCardBody p {
+  margin: 0 0 4px;
+  color: #46627f;
+  line-height: 1.5;
+}
+
+.starRow {
+  color: #e8a317;
+  font-size: 1.1rem;
+  letter-spacing: 2px;
+}
+
+/* Movie Details Reviews List */
+.movieReviewsList {
+  margin-top: 24px;
+}
+
+.movieReviewsList h2 {
+  margin-bottom: 12px;
+}
+
+/* Review box improvements */
+.reviewBox {
+  margin-top: 20px;
+}
+
+.reviewBox h2 {
+  margin-bottom: 4px;
+}
+
+.reviewBox .actionBtn {
+  margin-top: 10px;
+}
+
+.successText {
+  color: #15803d;
+  font-weight: 600;
+  margin-top: 8px;
 }
 
 /* Profile */
@@ -107,19 +178,48 @@
   padding: 12px;
   border-radius: 12px;
   border: 1px solid #e0e7f0;
-}
-
-.profileSavedItem {
   display: flex;
-  gap: 10px;
-  margin-bottom: 12px;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.profileSavedThumb {
-  width: 50px;
-  height: 50px;
-  border-radius: 8px;
+.profileMovieCard {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  border-radius: 12px;
   overflow: hidden;
+  border: 1px solid #e0e7f0;
+  background: #fbfdff;
+  transition: box-shadow 0.2s;
+}
+
+.profileMovieCard:hover {
+  box-shadow: 0 4px 14px rgba(20, 35, 58, 0.12);
+}
+
+.profileMovieCard img {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+}
+
+.profileMovieNoPoster {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  display: grid;
+  place-items: center;
+  background: #dbe5f1;
+  color: #355072;
+  font-weight: 700;
+}
+
+.profileMovieCardTitle {
+  margin: 0;
+  padding: 8px 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: center;
 }
 
 .profileInfoCard {
@@ -332,6 +432,11 @@ img {
 
 .cardActions {
   padding: 0 14px 14px;
+}
+
+.cardActions .actionBtn {
+  width: 100%;
+  font-size: 0.9rem;
 }
 
 .card img,

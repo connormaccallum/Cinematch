@@ -1,13 +1,19 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 
 export default function MovieCard({ movie, addToWatchlist }) {
-  const posterAvailable = movie.Poster && movie.Poster !== "N/A";
+  const [imgFailed, setImgFailed] = useState(false);
+  const posterAvailable = movie.Poster && movie.Poster !== "N/A" && !imgFailed;
 
   return (
     <article className="card">
       <Link to={`/movie/${movie.imdbID}`} className="cardLink">
         {posterAvailable ? (
-          <img src={movie.Poster} alt={movie.Title} />
+          <img
+            src={movie.Poster}
+            alt={movie.Title}
+            onError={() => setImgFailed(true)}
+          />
         ) : (
           <div className="noPoster">No Poster</div>
         )}
@@ -19,7 +25,7 @@ export default function MovieCard({ movie, addToWatchlist }) {
       </Link>
 
       <div className="cardActions">
-        <button onClick={() => addToWatchlist(movie)}>Add to Watchlist</button>
+        <button className="actionBtn" onClick={() => addToWatchlist(movie)}>Add to Watchlist</button>
       </div>
     </article>
   );

@@ -7,7 +7,6 @@ import Watchlist from "./pages/Watchlist.jsx";
 import MovieDetails from "./pages/MovieDetails.jsx";
 import Reviews from "./pages/Reviews.jsx";
 import Profile from "./pages/Profile.jsx";
-import { mockMovies } from "./data/mockMovies.js";
 
 function normalizeTmdbMovie(movie, imageBaseUrl) {
   return {
@@ -16,7 +15,7 @@ function normalizeTmdbMovie(movie, imageBaseUrl) {
     Year: movie.release_date ? movie.release_date.slice(0, 4) : "N/A",
     Poster: movie.poster_path
       ? `${imageBaseUrl}${movie.poster_path}`
-      : "https://placehold.co/300x450?text=No+Poster",
+      : "",
     Plot: movie.overview || "No description available.",
     Genre: "N/A",
     Director: "N/A"
@@ -32,15 +31,7 @@ export default function App() {
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("Batman");
   const [watchlist, setWatchlist] = useState([]);
-  const [reviews, setReviews] = useState([
-    {
-      id: 1,
-      movieId: "27205",
-      movieTitle: "Inception",
-      text: "Great visuals and a very interesting concept.",
-      rating: 4
-    }
-  ]);
+  const [reviews, setReviews] = useState([]);
 
   const handleLogin = (username, password) => {
     setCurrentUser(username);
@@ -65,11 +56,8 @@ export default function App() {
     setError("");
 
     if (!TMDB_TOKEN) {
-      const filteredMockMovies = mockMovies.filter((movie) =>
-        movie.Title.toLowerCase().includes(query.toLowerCase())
-      );
-      setMovies(filteredMockMovies.length ? filteredMockMovies : mockMovies);
-      setError("Using placeholder movie data.");
+      setMovies([]);
+      setError("TMDB API token is not configured. Please set VITE_TMDB_READ_ACCESS_TOKEN in your .env file.");
       setIsLoading(false);
       return;
     }
@@ -94,18 +82,12 @@ export default function App() {
         );
         setMovies(normalizedMovies);
       } else {
-        const filteredMockMovies = mockMovies.filter((movie) =>
-          movie.Title.toLowerCase().includes(query.toLowerCase())
-        );
-        setMovies(filteredMockMovies.length ? filteredMockMovies : mockMovies);
-        setError("No TMDb results found. Using placeholder movie data.");
+        setMovies([]);
+        setError("No results found for that search.");
       }
     } catch (err) {
-      const filteredMockMovies = mockMovies.filter((movie) =>
-        movie.Title.toLowerCase().includes(query.toLowerCase())
-      );
-      setMovies(filteredMockMovies.length ? filteredMockMovies : mockMovies);
-      setError("Failed to fetch TMDb movies. Using placeholder movie data.");
+      setMovies([]);
+      setError("Failed to fetch movies from TMDB. Check your network connection.");
     } finally {
       setIsLoading(false);
     }
@@ -142,6 +124,7 @@ export default function App() {
       id: Date.now(),
       movieId: movie.imdbID,
       movieTitle: movie.Title,
+      moviePoster: movie.Poster,
       text,
       rating
     };
@@ -175,6 +158,7 @@ export default function App() {
               addToWatchlist={addToWatchlist}
               addReview={addReview}
               watchlist={watchlist}
+              reviews={reviews}
             />
           }
         />
