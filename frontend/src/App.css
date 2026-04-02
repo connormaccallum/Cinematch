@@ -647,3 +647,33 @@ img {
   background: #3f74c3;
   color: white;
 }
+
+/* Disabled watchlist button */
+.actionBtnDisabled {
+  background: #9ca3af !important;
+  cursor: default;
+  opacity: 0.85;
+}
+
+/* Signup feedback messages */
+.signupSuccess {
+  margin: 8px 0 0;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #dcfce7;
+  color: #15803d;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.signupError {
+  margin: 8px 0 0;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #fef2f2;
+  color: #b42318;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-align: center;
+}

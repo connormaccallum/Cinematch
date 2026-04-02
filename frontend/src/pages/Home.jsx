@@ -1,7 +1,7 @@
 import SearchBar from "../components/SearchBar.jsx";
 import MovieGrid from "../components/MovieGrid.jsx";
 
-export default function Home({ movies, isLoading, error, onSearch, addToWatchlist }) {
+export default function Home({ movies, isLoading, error, onSearch, addToWatchlist, watchlist }) {
   return (
     <div className="page">
       <div className="hero">
@@ -19,7 +19,7 @@ export default function Home({ movies, isLoading, error, onSearch, addToWatchlis
         ) : movies.length === 0 ? (
           <p className="status">No movies found.</p>
         ) : (
-          <MovieGrid movies={movies} addToWatchlist={addToWatchlist} />
+          <MovieGrid movies={movies} addToWatchlist={addToWatchlist} watchlist={watchlist} />
         )}
       </main>
     </div>

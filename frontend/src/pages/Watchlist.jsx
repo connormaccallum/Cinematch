@@ -12,7 +12,7 @@ export default function Watchlist({ watchlist, addToWatchlist }) {
         {watchlist.length === 0 ? (
           <p className="status">No movies in your watchlist yet. Search for movies and add them!</p>
         ) : (
-          <MovieGrid movies={watchlist} addToWatchlist={addToWatchlist} />
+          <MovieGrid movies={watchlist} addToWatchlist={addToWatchlist} hideWatchlistBtn />
         )}
       </main>
     </div>

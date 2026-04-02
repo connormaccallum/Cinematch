@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
-export default function MovieCard({ movie, addToWatchlist }) {
+export default function MovieCard({ movie, addToWatchlist, hideWatchlistBtn, watchlist = [] }) {
   const [imgFailed, setImgFailed] = useState(false);
   const posterAvailable = movie.Poster && movie.Poster !== "N/A" && !imgFailed;
+  const isOnWatchlist = watchlist.some((item) => item.imdbID === movie.imdbID);
 
   return (
     <article className="card">
@@ -24,9 +25,17 @@ export default function MovieCard({ movie, addToWatchlist }) {
         </div>
       </Link>
 
-      <div className="cardActions">
-        <button className="actionBtn" onClick={() => addToWatchlist(movie)}>Add to Watchlist</button>
-      </div>
+      {!hideWatchlistBtn && (
+        <div className="cardActions">
+          <button
+            className={`actionBtn${isOnWatchlist ? " actionBtnDisabled" : ""}`}
+            onClick={() => !isOnWatchlist && addToWatchlist(movie)}
+            disabled={isOnWatchlist}
+          >
+            {isOnWatchlist ? "On Watchlist" : "Add to Watchlist"}
+          </button>
+        </div>
+      )}
     </article>
   );
 }
