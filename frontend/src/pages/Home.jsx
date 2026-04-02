@@ -1,12 +1,18 @@
 import SearchBar from "../components/SearchBar.jsx";
 import MovieGrid from "../components/MovieGrid.jsx";
 
-export default function Home({ movies, isLoading, error, onSearch, addToWatchlist, watchlist }) {
+export default function Home({ movies, isLoading, error, onSearch, addToWatchlist, watchlist, searchTerm, isTrending }) {
   return (
     <div className="page">
-      <div className="hero">
-        <h1>Movie Search Engine</h1>
-        <p>Search for your favorite movies and add them to your watchlist!</p>
+      <div className="heroSplit">
+        <div className="heroMain">
+          <h1>Movie Search Engine</h1>
+          <p>Search for your favorite movies and add them to your watchlist!</p>
+        </div>
+        <div className="heroSearch">
+          <span className="heroSearchLabel">Current Search:</span>
+          <span className="heroSearchValue">{isTrending ? "Trending" : searchTerm}</span>
+        </div>
       </div>
 
       <SearchBar onSearch={onSearch} />

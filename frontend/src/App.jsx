@@ -33,7 +33,8 @@ export default function App() {
   const [movies, setMovies] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
-  const [searchTerm, setSearchTerm] = useState("Batman");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isTrending, setIsTrending] = useState(true);
   const [watchlist, setWatchlist] = useState([]);
   const [reviews, setReviews] = useState([]);
 
@@ -69,9 +70,15 @@ export default function App() {
     }
 
     try {
-      const url = `${TMDB_BASE_URL}/search/movie?query=${encodeURIComponent(
-        query
-      )}&include_adult=false&language=en-US&page=1`;
+      let url;
+      if (!query) {
+        // Fetch trending movies
+        url = `${TMDB_BASE_URL}/trending/movie/week?language=en-US`;
+      } else {
+        url = `${TMDB_BASE_URL}/search/movie?query=${encodeURIComponent(
+          query
+        )}&include_adult=false&language=en-US&page=1`;
+      }
 
       const response = await fetch(url, {
         headers: {
@@ -89,7 +96,7 @@ export default function App() {
         setMovies(normalizedMovies);
       } else {
         setMovies([]);
-        setError("No results found for that search.");
+        setError(query ? "No results found for that search." : "Failed to load trending movies.");
       }
     } catch (err) {
       setMovies([]);
@@ -105,6 +112,7 @@ export default function App() {
 
   const handleSearch = (newSearchTerm) => {
     setSearchTerm(newSearchTerm);
+    setIsTrending(false);
   };
 
   const addToWatchlist = (movie) => {
@@ -156,6 +164,8 @@ export default function App() {
               onSearch={handleSearch}
               addToWatchlist={addToWatchlist}
               watchlist={watchlist}
+              searchTerm={searchTerm}
+              isTrending={isTrending}
             />
           }
         />
