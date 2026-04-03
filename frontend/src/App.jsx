@@ -23,24 +23,31 @@ function normalizeTmdbMovie(movie, imageBaseUrl) {
 }
 
 export default function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [currentUser, setCurrentUser] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(() => {
+    return localStorage.getItem("isLoggedIn") === "true";
+  });
+  const [currentUser, setCurrentUser] = useState(() => {
+    return localStorage.getItem("currentUser") || null;
+  });
 
   const [movies, setMovies] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
-  const [searchTerm, setSearchTerm] = useState("Batman");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isTrending, setIsTrending] = useState(true);
   const [watchlist, setWatchlist] = useState([]);
   const [reviews, setReviews] = useState([]);
 
   const handleLogin = (username, password) => {
     setCurrentUser(username);
     setIsLoggedIn(true);
+    localStorage.setItem("isLoggedIn", "true");
+    localStorage.setItem("currentUser", username);
   };
 
   const handleSignup = (username, password) => {
-    setCurrentUser(username);
-    setIsLoggedIn(true);
+    // Return a result object instead of auto-logging in
+    return { success: true, message: "Account created successfully! You can now log in." };
   };
 
   // TODO: Adjust logic to not expose token in frontend
@@ -63,9 +70,15 @@ export default function App() {
     }
 
     try {
-      const url = `${TMDB_BASE_URL}/search/movie?query=${encodeURIComponent(
-        query
-      )}&include_adult=false&language=en-US&page=1`;
+      let url;
+      if (!query) {
+        // Fetch trending movies
+        url = `${TMDB_BASE_URL}/trending/movie/week?language=en-US`;
+      } else {
+        url = `${TMDB_BASE_URL}/search/movie?query=${encodeURIComponent(
+          query
+        )}&include_adult=false&language=en-US&page=1`;
+      }
 
       const response = await fetch(url, {
         headers: {
@@ -83,7 +96,7 @@ export default function App() {
         setMovies(normalizedMovies);
       } else {
         setMovies([]);
-        setError("No results found for that search.");
+        setError(query ? "No results found for that search." : "Failed to load trending movies.");
       }
     } catch (err) {
       setMovies([]);
@@ -99,6 +112,7 @@ export default function App() {
 
   const handleSearch = (newSearchTerm) => {
     setSearchTerm(newSearchTerm);
+    setIsTrending(false);
   };
 
   const addToWatchlist = (movie) => {
@@ -149,6 +163,9 @@ export default function App() {
               error={error}
               onSearch={handleSearch}
               addToWatchlist={addToWatchlist}
+              watchlist={watchlist}
+              searchTerm={searchTerm}
+              isTrending={isTrending}
             />
           }
         />

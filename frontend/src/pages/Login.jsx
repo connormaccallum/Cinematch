@@ -30,6 +30,8 @@ export default function Login({ onLogin, onSignup }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState({});
+  const [signupMessage, setSignupMessage] = useState("");
+  const [signupSuccess, setSignupSuccess] = useState(false);
 
   const handleBlur = (field) => {
     const errs = validate(username, password);
@@ -53,9 +55,17 @@ export default function Login({ onLogin, onSignup }) {
       return;
     }
     if (action === "login") {
+      setSignupMessage("");
       onLogin(username, password);
     } else {
-      onSignup(username, password);
+      const result = onSignup(username, password);
+      if (result && result.success) {
+        setSignupSuccess(true);
+        setSignupMessage(result.message);
+      } else {
+        setSignupSuccess(false);
+        setSignupMessage(result?.message || "Sign up failed. Please try again.");
+      }
     }
   };
 
@@ -120,6 +130,12 @@ export default function Login({ onLogin, onSignup }) {
               Sign Up
             </button>
           </div>
+
+          {signupMessage && (
+            <p className={signupSuccess ? "signupSuccess" : "signupError"} role="alert">
+              {signupMessage}
+            </p>
+          )}
         </form>
       </div>
     </div>
