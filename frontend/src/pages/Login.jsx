@@ -48,7 +48,7 @@ export default function Login({ onLogin, onSignup }) {
     setErrors((prev) => ({ ...prev, password: undefined }));
   };
 
-  const handleSubmit = (action) => {
+  const handleSubmit = async (action) => {
     const errs = validate(username, password);
     if (Object.keys(errs).length > 0) {
       setErrors(errs);
@@ -56,9 +56,13 @@ export default function Login({ onLogin, onSignup }) {
     }
     if (action === "login") {
       setSignupMessage("");
-      onLogin(username, password);
+      const result = await onLogin(username, password);
+      if (result && !result.success) {
+        setSignupSuccess(false);
+        setSignupMessage(result.message);
+      }
     } else {
-      const result = onSignup(username, password);
+      const result = await onSignup(username, password);
       if (result && result.success) {
         setSignupSuccess(true);
         setSignupMessage(result.message);
