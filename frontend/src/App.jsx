@@ -38,16 +38,48 @@ export default function App() {
   const [watchlist, setWatchlist] = useState([]);
   const [reviews, setReviews] = useState([]);
 
-  const handleLogin = (username, password) => {
-    setCurrentUser(username);
-    setIsLoggedIn(true);
-    localStorage.setItem("isLoggedIn", "true");
-    localStorage.setItem("currentUser", username);
+  const handleLogin = async (username, password) => {
+    try {
+      const response = await fetch('http://localhost:3000/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return { success: false, message: data.error || 'Login failed.' };
+      }
+
+      setCurrentUser(data.username);
+      setIsLoggedIn(true);
+      localStorage.setItem("isLoggedIn", "true");
+      localStorage.setItem("currentUser", data.username);
+    } catch (error) {
+      console.error('Login error:', error.message);
+    }
   };
 
-  const handleSignup = (username, password) => {
-    // Return a result object instead of auto-logging in
-    return { success: true, message: "Account created successfully! You can now log in." };
+  const handleSignup = async (username, password) => {
+    try {
+      const response = await fetch('http://localhost:3000/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, email: username + '@cinematch.com', password })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return { success: false, message: data.error || 'Sign up failed.' };
+      }
+
+      return { success: true, message: 'Account created successfully! You can now log in.' };
+    } catch (error) {
+      console.error('Signup error:', error.message);
+      return { success: false, message: 'Server error. Please try again.' };
+    }
   };
 
   // TODO: Adjust logic to not expose token in frontend
@@ -206,4 +238,3 @@ export default function App() {
     </BrowserRouter>
   );
 }
-
