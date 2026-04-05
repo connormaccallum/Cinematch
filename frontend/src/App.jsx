@@ -155,7 +155,7 @@ export default function App() {
       if (alreadyExists) {
         return prevWatchlist;
       }
-      return [...prevWatchlist, { ...movie, listStatus: "WANT_TO_WATCH" }];
+      return [...prevWatchlist, { ...movie, listStatus: "WANT_TO_WATCH", lastUpdated: Date.now() }];
     });
   };
 
@@ -163,7 +163,7 @@ export default function App() {
     setWatchlist((prevWatchlist) =>
       prevWatchlist.map((movie) =>
         movie.movieId === movieId
-          ? { ...movie, listStatus: "WATCHED" }
+          ? { ...movie, listStatus: "WATCHED", lastUpdated: Date.now() }
           : movie
       )
     );

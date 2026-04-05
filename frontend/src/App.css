@@ -964,10 +964,27 @@ img {
   padding: 8px 10px;
 }
 
-.watchlistMarkBtn {
-  width: 100%;
+.watchlistCardActions {
+  display: flex;
+  flex-direction: column;
+}
+
+.watchlistCardActions .actionBtn {
+  width: auto;
+  flex: 1;
   font-size: 0.8rem;
   padding: 8px 10px;
+}
+
+.watchlistRemoveBtn {
+  font-size: 0.8rem;
+  padding: 8px 10px;
+  background: #b42318;
+  color: white;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  margin-top: 6px;
 }
 
 @media (min-width: 768px) {
@@ -976,8 +993,20 @@ img {
     padding: 16px 28px;
   }
 
-  .watchlistMarkBtn {
+  .watchlistCardActions .actionBtn,
+  .watchlistRemoveBtn {
     font-size: 0.9rem;
     padding: 10px 14px;
   }
+}
+
+.wantToWatchBadge {
+  width: 100%;
+  text-align: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #46627f;
+  background: #e0e7f0;
+  border-radius: 8px;
+  padding: 8px 10px;
 }

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
-function WatchlistCard({ movie, onMarkWatched }) {
+function WatchlistCard({ movie, onMarkWatched, onRemove }) {
   const [imgFailed, setImgFailed] = useState(false);
   const posterAvailable = movie.Poster && movie.Poster !== "N/A" && !imgFailed;
 
@@ -19,14 +19,17 @@ function WatchlistCard({ movie, onMarkWatched }) {
         )}
         <div className="cardContent">
           <h3>{movie.Title}</h3>
-          <p>Release year: {movie.Year}</p>
+          <p>{movie.Year}</p>
         </div>
       </Link>
 
       {onMarkWatched && (
-        <div className="cardActions">
-          <button className="actionBtn watchlistMarkBtn" onClick={() => onMarkWatched(movie.movieId)}>
+        <div className="cardActions watchlistCardActions">
+          <button className="actionBtn" onClick={() => onMarkWatched(movie.movieId)}>
             Mark as Watched
+          </button>
+          <button className="watchlistRemoveBtn" onClick={() => onRemove(movie.movieId)}>
+            Remove
           </button>
         </div>
       )}
@@ -40,7 +43,7 @@ function WatchlistCard({ movie, onMarkWatched }) {
   );
 }
 
-export default function Watchlist({ watchlist, markAsWatched }) {
+export default function Watchlist({ watchlist, markAsWatched, removeFromWatchlist }) {
   const [activeTab, setActiveTab] = useState("want");
 
   const wantToWatch = watchlist.filter((m) => m.listStatus === "WANT_TO_WATCH");
@@ -79,8 +82,8 @@ export default function Watchlist({ watchlist, markAsWatched }) {
         {displayed.length === 0 ? (
           <p className="status">
             {activeTab === "want"
-              ? "You haven't added any movies to your watchlist yet! Search for movies and click the Add to Watchlist button!"
-              : "You haven't watched any movies yet! Mark movies as watched from your Want to Watch list!"}
+              ? "You haven't added any movies to your watchlist yet! Search for movies and click the 'Add to Watchlist' button!"
+              : "You haven't watched any movies yet! Mark movies as 'Watched' from your 'Want to Watch' list!"}
           </p>
         ) : (
           <div className="grid">
@@ -89,6 +92,7 @@ export default function Watchlist({ watchlist, markAsWatched }) {
                 key={movie.movieId}
                 movie={movie}
                 onMarkWatched={activeTab === "want" ? markAsWatched : null}
+                onRemove={activeTab === "want" ? removeFromWatchlist : null}
               />
             ))}
           </div>

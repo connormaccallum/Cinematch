@@ -21,7 +21,7 @@ export default function MovieCard({ movie, addToWatchlist, hideWatchlistBtn, wat
 
         <div className="cardContent">
           <h3>{movie.Title}</h3>
-          <p>Release year: {movie.Year}</p>
+          <p>{movie.Year}</p>
         </div>
       </Link>
 

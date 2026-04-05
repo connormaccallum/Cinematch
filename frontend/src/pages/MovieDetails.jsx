@@ -89,11 +89,12 @@ export default function MovieDetails({ addToWatchlist, addReview, watchlist, rev
   }
 
   const isSaved = watchlist.some((item) => item.movieId === movie.movieId);
+  const hasWatched = watchlist.some((item) => item.movieId === movie.movieId && item.listStatus === "WATCHED");
   const movieReviews = reviews.filter((r) => r.movieId === movie.movieId);
 
   const handleSave = () => {
     addToWatchlist(movie);
-    setSavedMessage("Movie saved to your watchlist.");
+    setSavedMessage("Movie added to your watchlist!");
   };
 
   const handleReview = () => {
@@ -128,7 +129,7 @@ export default function MovieDetails({ addToWatchlist, addReview, watchlist, rev
             {movie.Director && movie.Director !== "N/A" && <p><strong>Director:</strong> {movie.Director}</p>}
             <div className="detailActions">
               <button className="actionBtn" type="button" onClick={handleSave}>
-                {isSaved ? "Saved" : "Save to List"}
+                {isSaved ? "Want to Watch" : "Add to Watchlist"}
               </button>
             </div>
             {savedMessage && <p className="successText">{savedMessage}</p>}
@@ -144,27 +145,35 @@ export default function MovieDetails({ addToWatchlist, addReview, watchlist, rev
 
         <section className="reviewBox">
           <h2>Leave a Review</h2>
-          <div className="starPicker">
-            {[1, 2, 3, 4, 5].map((star) => (
-              <button
-                key={star}
-                type="button"
-                className={`starPickerBtn ${star <= reviewRating ? "starFilled" : ""}`}
-                onClick={() => setReviewRating(star)}
-              >
-                {star <= reviewRating ? "★" : "☆"}
+          {hasWatched ? (
+            <>
+              <div className="starPicker">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    type="button"
+                    className={`starPickerBtn ${star <= reviewRating ? "starFilled" : ""}`}
+                    onClick={() => setReviewRating(star)}
+                  >
+                    {star <= reviewRating ? "★" : "☆"}
+                  </button>
+                ))}
+              </div>
+              <textarea
+                value={reviewText}
+                onChange={(e) => setReviewText(e.target.value)}
+                placeholder="Write a short review..."
+              />
+              <button className="actionBtn" type="button" onClick={handleReview}>
+                Submit Review
               </button>
-            ))}
-          </div>
-          <textarea
-            value={reviewText}
-            onChange={(e) => setReviewText(e.target.value)}
-            placeholder="Write a short review..."
-          />
-          <button className="actionBtn" type="button" onClick={handleReview}>
-            Submit Review
-          </button>
-          {reviewMessage && <p className="successText">{reviewMessage}</p>}
+              {reviewMessage && <p className="successText">{reviewMessage}</p>}
+            </>
+          ) : (
+            <p className="reviewLockedMsg">
+              You can only review a movie you have watched. Add it to your watchlist and mark it as watched first.
+            </p>
+          )}
         </section>
 
         <section className="movieReviewsList">

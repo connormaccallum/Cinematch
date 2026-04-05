@@ -2,7 +2,9 @@ import React from "react";
 import { Link } from "react-router-dom";
 
 export default function Profile({ currentUser, watchlist, reviews }) {
-  const savedPreview = watchlist.slice(0, 5);
+  const recentActivity = watchlist.length > 0 ? [...watchlist].sort((a, b) => b.lastUpdated - a.lastUpdated)[0] : null;
+
+  const recentReview = reviews.length > 0 ? reviews[0] : null;
 
   return (
     <div className="page">
@@ -13,21 +15,24 @@ export default function Profile({ currentUser, watchlist, reviews }) {
 
       <section className="profileLayout">
         <aside className="profileSavedColumn">
-          <h3>Saved Movies</h3>
+          <h3>Recent Activity</h3>
 
-          {savedPreview.length === 0 ? (
-            <p>No saved titles yet.</p>
+          {recentActivity ? (
+            <Link to={`/movie/${recentActivity.movieId}`} className="profileMovieCard">
+              {recentActivity.Poster ? (
+                <img src={recentActivity.Poster} alt={recentActivity.Title} />
+              ) : (
+                <div className="profileMovieNoPoster">No Poster</div>
+              )}
+              <div style={{ padding: "8px 10px 10px" }}>
+                <p className="profileMovieCardTitle">{recentActivity.Title}</p>
+                <div className={recentActivity.listStatus === "WATCHED" ? "watchedBadge" : "wantToWatchBadge"}>
+                  {recentActivity.listStatus === "WATCHED" ? "✓ Watched" : "Want to Watch"}
+                </div>
+              </div>
+            </Link>
           ) : (
-            savedPreview.map((movie) => (
-              <Link to={`/movie/${movie.movieId}`} className="profileMovieCard" key={movie.movieId}>
-                {movie.Poster ? (
-                  <img src={movie.Poster} alt={movie.Title} />
-                ) : (
-                  <div className="profileMovieNoPoster">No Poster</div>
-                )}
-                <p className="profileMovieCardTitle">{movie.Title}</p>
-              </Link>
-            ))
+            <p>No activity yet.</p>
           )}
         </aside>
 
@@ -44,25 +49,23 @@ export default function Profile({ currentUser, watchlist, reviews }) {
           </section>
 
           <section className="reviewsLargePanel">
-            <h3>Reviews</h3>
-            {reviews.length === 0 ? (
-              <p>No reviews written yet.</p>
-            ) : (
-              reviews.map((review) => (
-                <article className="reviewCardStyled" key={review.id}>
-                  {review.moviePoster && (
-                    <div className="reviewCardPoster">
-                      <img src={review.moviePoster} alt={review.movieTitle} />
-                    </div>
-                  )}
-                  <div className="reviewCardBody">
-                    <h3>{review.movieTitle}</h3>
-                    <p className="reviewUser">{review.username || "Anonymous"}</p>
-                    <p className="starRow">{"★".repeat(review.rating)}{"☆".repeat(5 - review.rating)}</p>
-                    <p>{review.text}</p>
+            <h3>Most Recent Review</h3>
+            {recentReview ? (
+              <article className="reviewCardStyled">
+                {recentReview.moviePoster && (
+                  <div className="reviewCardPoster">
+                    <img src={recentReview.moviePoster} alt={recentReview.movieTitle} />
                   </div>
-                </article>
-              ))
+                )}
+                <div className="reviewCardBody">
+                  <h3>{recentReview.movieTitle}</h3>
+                  <p className="reviewUser">{recentReview.username || "Anonymous"}</p>
+                  <p className="starRow">{"★".repeat(recentReview.rating)}{"☆".repeat(5 - recentReview.rating)}</p>
+                  <p>{recentReview.text}</p>
+                </div>
+              </article>
+            ) : (
+              <p>No reviews written yet.</p>
             )}
           </section>
         </div>
