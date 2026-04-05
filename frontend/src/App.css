@@ -898,3 +898,86 @@ img {
   font-size: 0.9rem;
   text-align: center;
 }
+
+.watchlistTabs {
+  display: flex;
+  gap: 0;
+  background: white;
+  border-radius: 14px 14px 0 0;
+  border: 1px solid #e0e7f0;
+  border-bottom: none;
+  margin-top: 20px;
+  overflow: hidden;
+}
+
+.watchlistTab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 20px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: none;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #46627f;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.watchlistTab:hover {
+  color: #173a6b;
+  background: #f7fafd;
+}
+
+.watchlistTabActive {
+  color: #173a6b;
+  border-bottom: 2px solid #173a6b;
+  background: white;
+}
+
+.watchlistTabBadge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 99px;
+  background: #e0e7f0;
+  color: #46627f;
+  transition: background 0.15s, color 0.15s;
+}
+
+.watchlistTabBadgeActive {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.watchedBadge {
+  width: 100%;
+  text-align: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #15803d;
+  background: #dcfce7;
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+.watchlistMarkBtn {
+  width: 100%;
+  font-size: 0.8rem;
+  padding: 8px 10px;
+}
+
+@media (min-width: 768px) {
+  .watchlistTab {
+    font-size: 1rem;
+    padding: 16px 28px;
+  }
+
+  .watchlistMarkBtn {
+    font-size: 0.9rem;
+    padding: 10px 14px;
+  }
+}

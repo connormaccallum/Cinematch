@@ -4,7 +4,7 @@ import { useParams } from "react-router-dom";
 function normalizeTmdbMovie(movie, imageBaseUrl) {
   const director = movie.credits?.crew?.find((c) => c.job === "Director");
   return {
-    imdbID: String(movie.id),
+    movieId: String(movie.id),
     Title: movie.title || movie.name || "Untitled",
     Year: movie.release_date ? movie.release_date.slice(0, 4) : "N/A",
     Poster: movie.poster_path
@@ -88,8 +88,8 @@ export default function MovieDetails({ addToWatchlist, addReview, watchlist, rev
     );
   }
 
-  const isSaved = watchlist.some((item) => item.imdbID === movie.imdbID);
-  const movieReviews = reviews.filter((r) => r.movieId === movie.imdbID);
+  const isSaved = watchlist.some((item) => item.movieId === movie.movieId);
+  const movieReviews = reviews.filter((r) => r.movieId === movie.movieId);
 
   const handleSave = () => {
     addToWatchlist(movie);

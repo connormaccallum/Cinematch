@@ -10,7 +10,7 @@ import Profile from "./pages/Profile.jsx";
 
 function normalizeTmdbMovie(movie, imageBaseUrl) {
   return {
-    imdbID: String(movie.id),
+    movieId: String(movie.id),
     Title: movie.title || movie.name || "Untitled",
     Year: movie.release_date ? movie.release_date.slice(0, 4) : "N/A",
     Poster: movie.poster_path
@@ -150,25 +150,35 @@ export default function App() {
   const addToWatchlist = (movie) => {
     setWatchlist((prevWatchlist) => {
       const alreadyExists = prevWatchlist.some(
-        (item) => item.imdbID === movie.imdbID
+        (item) => item.movieId === movie.movieId
       );
       if (alreadyExists) {
         return prevWatchlist;
       }
-      return [...prevWatchlist, movie];
+      return [...prevWatchlist, { ...movie, listStatus: "WANT_TO_WATCH" }];
     });
+  };
+
+  const markAsWatched = (movieId) => {
+    setWatchlist((prevWatchlist) =>
+      prevWatchlist.map((movie) =>
+        movie.movieId === movieId
+          ? { ...movie, listStatus: "WATCHED" }
+          : movie
+      )
+    );
   };
 
   const removeFromWatchlist = (movieId) => {
     setWatchlist((prevWatchlist) =>
-      prevWatchlist.filter((movie) => movie.imdbID !== movieId)
+      prevWatchlist.filter((movie) => movie.movieId !== movieId)
     );
   };
 
   const addReview = (movie, text, rating, username) => {
     const newReview = {
       id: Date.now(),
-      movieId: movie.imdbID,
+      movieId: movie.movieId,
       movieTitle: movie.Title,
       moviePoster: movie.Poster,
       text,
@@ -220,6 +230,7 @@ export default function App() {
               watchlist={watchlist}
               addToWatchlist={addToWatchlist}
               removeFromWatchlist={removeFromWatchlist}
+              markAsWatched={markAsWatched}
             />
           }
         />

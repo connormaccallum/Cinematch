@@ -19,7 +19,7 @@ export default function Profile({ currentUser, watchlist, reviews }) {
             <p>No saved titles yet.</p>
           ) : (
             savedPreview.map((movie) => (
-              <Link to={`/movie/${movie.imdbID}`} className="profileMovieCard" key={movie.imdbID}>
+              <Link to={`/movie/${movie.movieId}`} className="profileMovieCard" key={movie.movieId}>
                 {movie.Poster ? (
                   <img src={movie.Poster} alt={movie.Title} />
                 ) : (
