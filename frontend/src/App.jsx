@@ -8,6 +8,7 @@ import MovieDetails from "./pages/MovieDetails.jsx";
 import Reviews from "./pages/Reviews.jsx";
 import Profile from "./pages/Profile.jsx";
 
+// normalize TMDb movie data to match our internal format
 function normalizeTmdbMovie(movie, imageBaseUrl) {
   return {
     movieId: String(movie.id),
@@ -36,6 +37,39 @@ export default function App() {
   const [watchlist, setWatchlist] = useState([]);
   const [reviews, setReviews] = useState([]);
 
+  // normalize backend interaction data to match our frontend format
+  // reconstruct poster URL using TMDB base URL + poster path from backend
+  const normalizeInteraction = (row) => {
+    const base = import.meta.env.VITE_TMDB_IMAGE_BASE_URL || "https://image.tmdb.org/t/p/w500";
+    const poster = row.posterPath ? `${base}${row.posterPath}` : "";
+    return {
+      interactionId: row.interactionId,
+      movieId: String(row.movieId),
+      Title: row.title,
+      Poster: poster,
+      Year: row.releaseDate ? String(row.releaseDate).slice(0, 4) : "N/A",
+      listStatus: row.listStatus,
+      // use dateWatched, otherwise dateAdded for sorting
+      lastUpdated: new Date(row.dateWatched || row.dateAdded).getTime()
+    };
+  };
+
+  // fetch UserMovieInteraction data and normalize it for frontend use
+  const fetchWatchlist = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/api/interactions', {
+        credentials: 'include'
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setWatchlist(data.map(normalizeInteraction));
+      }
+    } catch (error) {
+      console.error('Error fetching watchlist:', error.message);
+    }
+  };
+
+  // check session cookie on page load
   useEffect(() => {
     const checkSession = async () => {
       try {
@@ -45,8 +79,9 @@ export default function App() {
         if (response.ok) {
           const data = await response.json();
           setCurrentUser(data.username);
-          setCurrentUserId(data.userid)
+          setCurrentUserId(data.userid);
           setIsLoggedIn(true);
+          await fetchWatchlist();
         }
       } catch (error) {
         console.error('Session check error:', error.message);
@@ -57,11 +92,13 @@ export default function App() {
     checkSession();
   }, []);
 
+  // auth user and fetch watchlist
   const handleLogin = async (username, password) => {
     try {
       const response = await fetch('http://localhost:3000/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ username, password })
       });
 
@@ -74,11 +111,13 @@ export default function App() {
       setCurrentUser(data.username);
       setCurrentUserId(data.userid);
       setIsLoggedIn(true);
+      await fetchWatchlist();
     } catch (error) {
       console.error('Login error:', error.message);
     }
   };
 
+  // register new user
   const handleSignup = async (username, password) => {
     try {
       const response = await fetch('http://localhost:3000/api/auth/register', {
@@ -100,6 +139,25 @@ export default function App() {
     }
   };
 
+  // clear session cookie and reset auth state
+  const handleLogout = async () => {
+    try {
+      await fetch('http://localhost:3000/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include'
+      });
+    } catch (error) {
+      console.error('Logout error:', error.message);
+    } finally {
+      setCurrentUser(null);
+      setCurrentUserId(null);
+      setIsLoggedIn(false);
+      setWatchlist([]);
+      setReviews([]);
+    }
+  };
+
+
   // TODO: Adjust logic to not expose token in frontend
   const TMDB_TOKEN = import.meta.env.VITE_TMDB_READ_ACCESS_TOKEN;
   const TMDB_BASE_URL =
@@ -108,6 +166,7 @@ export default function App() {
     import.meta.env.VITE_TMDB_IMAGE_BASE_URL ||
     "https://image.tmdb.org/t/p/w500";
 
+  // fetch movies from TMDB API based on search term or trending if no term
   const fetchMovies = async (query) => {
     setIsLoading(true);
     setError("");
@@ -122,7 +181,7 @@ export default function App() {
     try {
       let url;
       if (!query) {
-        // Fetch trending movies
+        // Fetch trending movies because no search term
         url = `${TMDB_BASE_URL}/trending/movie/week?language=en-US`;
       } else {
         url = `${TMDB_BASE_URL}/search/movie?query=${encodeURIComponent(
@@ -156,6 +215,7 @@ export default function App() {
     }
   };
 
+  // re fetch when search term changes
   useEffect(() => {
     fetchMovies(searchTerm);
   }, [searchTerm]);
@@ -165,32 +225,85 @@ export default function App() {
     setIsTrending(false);
   };
 
-  const addToWatchlist = (movie) => {
-    setWatchlist((prevWatchlist) => {
-      const alreadyExists = prevWatchlist.some(
-        (item) => item.movieId === movie.movieId
-      );
-      if (alreadyExists) {
-        return prevWatchlist;
+  // add movie to watchlist immediately, then sync with backend
+  // revert if fails
+  const addToWatchlist = async (movie) => {
+    const alreadyExists = watchlist.some((item) => item.movieId === movie.movieId);
+    if (alreadyExists) return;
+
+    const newEntry = { ...movie, listStatus: "WANT_TO_WATCH", lastUpdated: Date.now() };
+    setWatchlist((prev) => [...prev, newEntry]);
+
+    try {
+      const response = await fetch('http://localhost:3000/api/interactions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          movieId: movie.movieId
+        })
+      });
+
+      console.log('Add to watchlist status:', response.status);
+      const data = await response.json();
+      console.log('Add to watchlist response:', data);
+
+      if (response.ok) {
+        // update with real interactionId from backend
+        await fetchWatchlist();
+      } else {
+        setWatchlist((prev) => prev.filter((item) => item.movieId !== movie.movieId));
       }
-      return [...prevWatchlist, { ...movie, listStatus: "WANT_TO_WATCH", lastUpdated: Date.now() }];
-    });
+    } catch (error) {
+      console.error('Error adding to watchlist:', error.message);
+      setWatchlist((prev) => prev.filter((item) => item.movieId !== movie.movieId));
+    }
   };
 
-  const markAsWatched = (movieId) => {
-    setWatchlist((prevWatchlist) =>
-      prevWatchlist.map((movie) =>
-        movie.movieId === movieId
-          ? { ...movie, listStatus: "WATCHED", lastUpdated: Date.now() }
-          : movie
+  // mark as watched immediately, then sync with backend
+  // revert if fails
+  const markAsWatched = async (interactionId) => {
+    setWatchlist((prev) =>
+      prev.map((item) =>
+        item.interactionId === interactionId
+          ? { ...item, listStatus: "WATCHED", lastUpdated: Date.now() }
+          : item
       )
     );
+
+    try {
+      const response = await fetch(`http://localhost:3000/api/interactions/${interactionId}/watched`, {
+        method: 'PUT',
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        await fetchWatchlist();
+      }
+    } catch (error) {
+      console.error('Error marking as watched:', error.message);
+      await fetchWatchlist();
+    }
   };
 
-  const removeFromWatchlist = (movieId) => {
-    setWatchlist((prevWatchlist) =>
-      prevWatchlist.filter((movie) => movie.movieId !== movieId)
-    );
+  // remove from watchlist immediately, then sync with backend
+  // revert if fails
+  const removeFromWatchlist = async (interactionId) => {
+    setWatchlist((prev) => prev.filter((item) => item.interactionId !== interactionId));
+
+    try {
+      const response = await fetch(`http://localhost:3000/api/interactions/${interactionId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        await fetchWatchlist();
+      }
+    } catch (error) {
+      console.error('Error removing from watchlist:', error.message);
+      await fetchWatchlist();
+    }
   };
 
   const addReview = (movie, text, rating, username) => {
@@ -205,6 +318,8 @@ export default function App() {
     };
     setReviews((prevReviews) => [newReview, ...prevReviews]);
   };
+
+  if (!sessionChecked) return null;
 
   if (!isLoggedIn) {
     return <Login onLogin={handleLogin} onSignup={handleSignup} />;

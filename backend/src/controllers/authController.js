@@ -86,6 +86,7 @@ const loginUser = async (req, res) => {
     }
 };
 
+// hancle user logout by destroying server side session and clears cookie
 const logoutUser = (req, res) => {
     req.session.destroy(err => {
         if (err) {
@@ -97,10 +98,11 @@ const logoutUser = (req, res) => {
     });
 };
 
+// checks for active session and allows user to stay logged in
 const getSession = (req, res) => {
     if (req.session.userId) {
-        res.status(200).json({
-            userid: req.session.userid,
+        return res.status(200).json({
+            userid: req.session.userId,
             username: req.session.username
         });
     }

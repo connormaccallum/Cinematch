@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
+// card for watchlist entries
+// different for want to watch vs watched
 function WatchlistCard({ movie, onMarkWatched, onRemove }) {
   const [imgFailed, setImgFailed] = useState(false);
   const posterAvailable = movie.Poster && movie.Poster !== "N/A" && !imgFailed;
@@ -23,17 +25,18 @@ function WatchlistCard({ movie, onMarkWatched, onRemove }) {
         </div>
       </Link>
 
+      {/* want to watch tab has buttons*/}
       {onMarkWatched && (
         <div className="cardActions watchlistCardActions">
-          <button className="actionBtn" onClick={() => onMarkWatched(movie.movieId)}>
+          <button className="actionBtn" onClick={() => onMarkWatched(movie.interactionId)}>
             Mark as Watched
           </button>
-          <button className="watchlistRemoveBtn" onClick={() => onRemove(movie.movieId)}>
+          <button className="watchlistRemoveBtn" onClick={() => onRemove(movie.interactionId)}>
             Remove
           </button>
         </div>
       )}
-
+      {/* watched tab has static badge */}
       {!onMarkWatched && (
         <div className="cardActions">
           <div className="watchedBadge">&#10003; Watched</div>
@@ -44,6 +47,7 @@ function WatchlistCard({ movie, onMarkWatched, onRemove }) {
 }
 
 export default function Watchlist({ watchlist, markAsWatched, removeFromWatchlist }) {
+  console.log('Watchlist state:', watchlist);
   const [activeTab, setActiveTab] = useState("want");
 
   const wantToWatch = watchlist.filter((m) => m.listStatus === "WANT_TO_WATCH");
@@ -57,6 +61,7 @@ export default function Watchlist({ watchlist, markAsWatched, removeFromWatchlis
         <p>Movies you've saved to watch later.</p>
       </div>
 
+      {/* tab bar toggles between want to watch and watched */}
       <div className="watchlistTabs">
         <button
           className={`watchlistTab${activeTab === "want" ? " watchlistTabActive" : ""}`}
@@ -91,6 +96,7 @@ export default function Watchlist({ watchlist, markAsWatched, removeFromWatchlis
               <WatchlistCard
                 key={movie.movieId}
                 movie={movie}
+                // action handlers only on want to watch tab
                 onMarkWatched={activeTab === "want" ? markAsWatched : null}
                 onRemove={activeTab === "want" ? removeFromWatchlist : null}
               />
