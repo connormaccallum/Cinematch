@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
+// normalize TMDb movie data into the shape used by this component
 function normalizeTmdbMovie(movie, imageBaseUrl) {
   const director = movie.credits?.crew?.find((c) => c.job === "Director");
   return {
-    imdbID: String(movie.id),
+    movieId: String(movie.id),
     Title: movie.title || movie.name || "Untitled",
     Year: movie.release_date ? movie.release_date.slice(0, 4) : "N/A",
     Poster: movie.poster_path
@@ -16,12 +17,20 @@ function normalizeTmdbMovie(movie, imageBaseUrl) {
   };
 }
 
-export default function MovieDetails({ addToWatchlist, addReview, watchlist, reviews, currentUser }) {
+export default function MovieDetails({ addToWatchlist, addReview, watchlist, currentUser }) {
   const { id } = useParams();
 
   const [movie, setMovie] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+
+  // reviews are fetched per movie from the backend
+  const [movieReviews, setMovieReviews] = useState([]);
+
+  const [reviewText, setReviewText] = useState("");
+  const [reviewRating, setReviewRating] = useState(0);
+  const [savedMessage, setSavedMessage] = useState("");
+  const [reviewMessage, setReviewMessage] = useState("");
 
   const TMDB_TOKEN = import.meta.env.VITE_TMDB_READ_ACCESS_TOKEN;
   const TMDB_BASE_URL =
@@ -30,6 +39,7 @@ export default function MovieDetails({ addToWatchlist, addReview, watchlist, rev
     import.meta.env.VITE_TMDB_IMAGE_BASE_URL ||
     "https://image.tmdb.org/t/p/w500";
 
+  // fetch movie details from TMDb
   useEffect(() => {
     const fetchMovie = async () => {
       setIsLoading(true);
@@ -67,10 +77,23 @@ export default function MovieDetails({ addToWatchlist, addReview, watchlist, rev
     fetchMovie();
   }, [id]);
 
-  const [reviewText, setReviewText] = useState("");
-  const [reviewRating, setReviewRating] = useState(0);
-  const [savedMessage, setSavedMessage] = useState("");
-  const [reviewMessage, setReviewMessage] = useState("");
+  // fetch all reviews for this movie from the backend
+  // shows reviews from all users
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        const response = await fetch(`http://localhost:3000/api/reviews/${id}`);
+        if (response.ok) {
+          const data = await response.json();
+          setMovieReviews(data);
+        }
+      } catch (error) {
+        console.error('Error fetching reviews:', error.message);
+      }
+    };
+
+    fetchReviews();
+  }, [id]);
 
   if (isLoading) {
     return (
@@ -88,15 +111,17 @@ export default function MovieDetails({ addToWatchlist, addReview, watchlist, rev
     );
   }
 
-  const isSaved = watchlist.some((item) => item.imdbID === movie.imdbID);
-  const movieReviews = reviews.filter((r) => r.movieId === movie.imdbID);
+  const isSaved = watchlist.some((item) => item.movieId === movie.movieId);
+  const hasWatched = watchlist.some((item) => item.movieId === movie.movieId && item.listStatus === "WATCHED");
 
   const handleSave = () => {
     addToWatchlist(movie);
-    setSavedMessage("Movie saved to your watchlist.");
+    setSavedMessage("Movie added to your watchlist!");
   };
 
-  const handleReview = () => {
+  // submit review to the backend by calling addReview from App.jsx,
+  // then re fetch to show the new entry
+  const handleReview = async () => {
     if (!reviewText.trim()) {
       setReviewMessage("Enter a short review first.");
       return;
@@ -106,10 +131,26 @@ export default function MovieDetails({ addToWatchlist, addReview, watchlist, rev
       return;
     }
 
-    addReview(movie, reviewText, reviewRating, currentUser);
-    setReviewText("");
-    setReviewRating(0);
-    setReviewMessage("Review added.");
+    const result = await addReview(movie, reviewText, reviewRating);
+
+    if (result.success) {
+      setReviewText("");
+      setReviewRating(0);
+      setReviewMessage("Review submitted!");
+
+      // re fetch this movie's reviews so the new one appears immediately
+      try {
+        const response = await fetch(`http://localhost:3000/api/reviews/${movie.movieId}`);
+        if (response.ok) {
+          const data = await response.json();
+          setMovieReviews(data);
+        }
+      } catch (error) {
+        console.error('Error refreshing reviews:', error.message);
+      }
+    } else {
+      setReviewMessage(result.message || "Failed to submit review.");
+    }
   };
 
   return (
@@ -128,7 +169,7 @@ export default function MovieDetails({ addToWatchlist, addReview, watchlist, rev
             {movie.Director && movie.Director !== "N/A" && <p><strong>Director:</strong> {movie.Director}</p>}
             <div className="detailActions">
               <button className="actionBtn" type="button" onClick={handleSave}>
-                {isSaved ? "Saved" : "Save to List"}
+                {isSaved ? "Want to Watch" : "Add to Watchlist"}
               </button>
             </div>
             {savedMessage && <p className="successText">{savedMessage}</p>}
@@ -144,27 +185,36 @@ export default function MovieDetails({ addToWatchlist, addReview, watchlist, rev
 
         <section className="reviewBox">
           <h2>Leave a Review</h2>
-          <div className="starPicker">
-            {[1, 2, 3, 4, 5].map((star) => (
-              <button
-                key={star}
-                type="button"
-                className={`starPickerBtn ${star <= reviewRating ? "starFilled" : ""}`}
-                onClick={() => setReviewRating(star)}
-              >
-                {star <= reviewRating ? "★" : "☆"}
+          {hasWatched ? (
+            <>
+              <div className="starPicker">
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((star) => (
+                  <button
+                    key={star}
+                    type="button"
+                    className={`starPickerBtn ${star <= reviewRating ? "starFilled" : ""}`}
+                    onClick={() => setReviewRating(star)}
+                  >
+                    {star <= reviewRating ? "★" : "☆"}
+                  </button>
+                ))}
+              </div>
+              <textarea
+                value={reviewText}
+                onChange={(e) => setReviewText(e.target.value)}
+                placeholder="Write a short review..."
+              />
+              <button className="actionBtn" type="button" onClick={handleReview}>
+                Submit Review
               </button>
-            ))}
-          </div>
-          <textarea
-            value={reviewText}
-            onChange={(e) => setReviewText(e.target.value)}
-            placeholder="Write a short review..."
-          />
-          <button className="actionBtn" type="button" onClick={handleReview}>
-            Submit Review
-          </button>
-          {reviewMessage && <p className="successText">{reviewMessage}</p>}
+              {reviewMessage && <p className="successText">{reviewMessage}</p>}
+            </>
+          ) : (
+            // locked message shown when the movie hasn't been marked as watched
+            <p className="reviewLockedMsg">
+              You can only review a movie you have watched. Add it to your watchlist and mark it as watched first.
+            </p>
+          )}
         </section>
 
         <section className="movieReviewsList">
@@ -173,10 +223,10 @@ export default function MovieDetails({ addToWatchlist, addReview, watchlist, rev
             <p>No reviews for this movie yet.</p>
           ) : (
             movieReviews.map((review) => (
-              <article className="reviewCardStyled" key={review.id}>
+              <article className="reviewCardStyled" key={review.reviewId}>
                 <div className="reviewCardBody">
                   <p className="reviewUser">{review.username || "Anonymous"}</p>
-                  <p className="starRow">{"★".repeat(review.rating)}{"☆".repeat(5 - review.rating)}</p>
+                  <p className="starRow">{"★".repeat(review.rating)}{"☆".repeat(10 - review.rating)}</p>
                   <p>{review.text}</p>
                 </div>
               </article>

@@ -70,6 +70,9 @@ const loginUser = async (req, res) => {
             return res.status(401).json({ error: 'Invalid username or password' });
         }
 
+        req.session.userId = user.userid;
+        req.session.username = user.username;
+
         // return user data (without password hash)
         res.status(200).json({
             userid: user.userid,
@@ -83,8 +86,33 @@ const loginUser = async (req, res) => {
     }
 };
 
+// hancle user logout by destroying server side session and clears cookie
+const logoutUser = (req, res) => {
+    req.session.destroy(err => {
+        if (err) {
+            console.error('Error destroying session:', err.message);
+            return res.status(500).json({ error: 'Failed to logout' });
+        }
+        res.clearCookie('connect.sid');
+        res.status(200).json({ message: 'Logged out successfully' });
+    });
+};
+
+// checks for active session and allows user to stay logged in
+const getSession = (req, res) => {
+    if (req.session.userId) {
+        return res.status(200).json({
+            userid: req.session.userId,
+            username: req.session.username
+        });
+    }
+    res.status(401).json({ error: 'No active session' });
+};
+
 // export controller functions for use in routes
 module.exports = {
     registerUser,
-    loginUser
+    loginUser,
+    logoutUser,
+    getSession
 };

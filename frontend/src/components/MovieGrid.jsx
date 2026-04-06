@@ -5,7 +5,7 @@ export default function MovieGrid({ movies, addToWatchlist, hideWatchlistBtn, wa
     <div className="grid">
       {movies.map((movie) => (
         <MovieCard
-          key={movie.imdbID}
+          key={movie.movieId}
           movie={movie}
           addToWatchlist={addToWatchlist}
           hideWatchlistBtn={hideWatchlistBtn}
