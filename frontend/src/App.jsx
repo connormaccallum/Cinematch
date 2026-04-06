@@ -23,12 +23,10 @@ function normalizeTmdbMovie(movie, imageBaseUrl) {
 }
 
 export default function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(() => {
-    return localStorage.getItem("isLoggedIn") === "true";
-  });
-  const [currentUser, setCurrentUser] = useState(() => {
-    return localStorage.getItem("currentUser") || null;
-  });
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [currentUserId, setCurrentUserId] = useState(null);
+  const [sessionChecked, setSessionChecked] = useState(false);
 
   const [movies, setMovies] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -37,6 +35,27 @@ export default function App() {
   const [isTrending, setIsTrending] = useState(true);
   const [watchlist, setWatchlist] = useState([]);
   const [reviews, setReviews] = useState([]);
+
+  useEffect(() => {
+    const checkSession = async () => {
+      try {
+        const response = await fetch('http://localhost:3000/api/auth/session', {
+          credentials: 'include'
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setCurrentUser(data.username);
+          setCurrentUserId(data.userid)
+          setIsLoggedIn(true);
+        }
+      } catch (error) {
+        console.error('Session check error:', error.message);
+      } finally {
+        setSessionChecked(true);
+      }
+    };
+    checkSession();
+  }, []);
 
   const handleLogin = async (username, password) => {
     try {
@@ -53,9 +72,8 @@ export default function App() {
       }
 
       setCurrentUser(data.username);
+      setCurrentUserId(data.userid);
       setIsLoggedIn(true);
-      localStorage.setItem("isLoggedIn", "true");
-      localStorage.setItem("currentUser", data.username);
     } catch (error) {
       console.error('Login error:', error.message);
     }
