@@ -47,7 +47,6 @@ function WatchlistCard({ movie, onMarkWatched, onRemove }) {
 }
 
 export default function Watchlist({ watchlist, markAsWatched, removeFromWatchlist }) {
-  console.log('Watchlist state:', watchlist);
   const [activeTab, setActiveTab] = useState("want");
 
   const wantToWatch = watchlist.filter((m) => m.listStatus === "WANT_TO_WATCH");

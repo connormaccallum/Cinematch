@@ -80,7 +80,36 @@ const addReview = async (req, res) => {
     }
 };
 
+const getUserReviews = async (req, res) => {
+    try {
+        const result = await db.query(
+            `SELECT
+                r.ReviewID AS "reviewId",
+                r.Rating AS "rating",
+                r.Review AS "text",
+                r.DateRated AS "dateRated",
+                m.MovieID AS "movieId",
+                m.Title AS "movieTitle",
+                m.PosterPath AS "moviePoster",
+                u.Username AS "username"
+            FROM Review r
+            JOIN UserMovieInteraction umi ON r.InteractionID = umi.InteractionID
+            JOIN Movie m ON umi.MovieID = m.MovieID
+            JOIN "User" u ON umi.UserID = u.UserID
+            WHERE umi.UserID = $1
+            ORDER BY r.DateRated DESC, r.ReviewID DESC`,
+            [req.user.userid]
+        );
+
+        res.status(200).json(result.rows);
+    } catch (error) {
+        console.error('Error in getUserReviews:', error.message);
+        res.status(500).json({ error: 'Failed to fetch user reviews' });
+    }
+};
+
 module.exports = {
     getReviewsForMovie,
-    addReview
+    addReview,
+    getUserReviews
 };

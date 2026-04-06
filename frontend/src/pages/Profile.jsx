@@ -60,7 +60,7 @@ export default function Profile({ currentUser, watchlist, reviews }) {
                 <div className="reviewCardBody">
                   <h3>{recentReview.movieTitle}</h3>
                   <p className="reviewUser">{recentReview.username || "Anonymous"}</p>
-                  <p className="starRow">{"★".repeat(recentReview.rating)}{"☆".repeat(5 - recentReview.rating)}</p>
+                  <p className="starRow">{"★".repeat(recentReview.rating)}{"☆".repeat(10 - recentReview.rating)}</p>
                   <p>{recentReview.text}</p>
                 </div>
               </article>

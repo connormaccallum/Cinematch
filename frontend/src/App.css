@@ -1010,3 +1010,13 @@ img {
   border-radius: 8px;
   padding: 8px 10px;
 }
+
+.reviewLockedMsg {
+  color: #46627f;
+  background: #f0f4f8;
+  border-left: 3px solid #cbd6e2;
+  border-radius: 0 8px 8px 0;
+  padding: 12px 14px;
+  margin-top: 8px;
+  font-size: 0.95rem;
+}

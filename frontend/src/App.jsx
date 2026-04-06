@@ -50,7 +50,7 @@ export default function App() {
       Year: row.releaseDate ? String(row.releaseDate).slice(0, 4) : "N/A",
       listStatus: row.listStatus,
       // use dateWatched, otherwise dateAdded for sorting
-      lastUpdated: new Date(row.dateWatched || row.dateAdded).getTime()
+      lastUpdated: new Date(row.dateWatched || row.dateAdded).getTime() + (row.interactionId || 0)
     };
   };
 
@@ -69,6 +69,26 @@ export default function App() {
     }
   };
 
+  // fetch user reviews from backend
+  // populates reviews page
+  const fetchUserReviews = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/api/reviews/user', {
+        credentials: 'include'
+      });
+      if (response.ok) {
+        const data = await response.json();
+        const base = import.meta.env.VITE_TMDB_IMAGE_BASE_URL || "https://image.tmdb.org/t/p/w500";
+        setReviews(data.map(review => ({
+          ...review,
+          moviePoster: review.moviePoster ? `${base}${review.moviePoster}` : ""
+        })));
+      }
+    } catch (error) {
+      console.error('Error fetching user reviews:', error.message);
+    }
+  };
+
   // check session cookie on page load
   useEffect(() => {
     const checkSession = async () => {
@@ -82,6 +102,7 @@ export default function App() {
           setCurrentUserId(data.userid);
           setIsLoggedIn(true);
           await fetchWatchlist();
+          await fetchUserReviews();
         }
       } catch (error) {
         console.error('Session check error:', error.message);
@@ -112,6 +133,7 @@ export default function App() {
       setCurrentUserId(data.userid);
       setIsLoggedIn(true);
       await fetchWatchlist();
+      await fetchUserReviews();
     } catch (error) {
       console.error('Login error:', error.message);
     }
@@ -157,8 +179,6 @@ export default function App() {
     }
   };
 
-
-  // TODO: Adjust logic to not expose token in frontend
   const TMDB_TOKEN = import.meta.env.VITE_TMDB_READ_ACCESS_TOKEN;
   const TMDB_BASE_URL =
     import.meta.env.VITE_TMDB_BASE_URL || "https://api.themoviedb.org/3";
@@ -244,9 +264,7 @@ export default function App() {
         })
       });
 
-      console.log('Add to watchlist status:', response.status);
       const data = await response.json();
-      console.log('Add to watchlist response:', data);
 
       if (response.ok) {
         // update with real interactionId from backend
@@ -306,17 +324,27 @@ export default function App() {
     }
   };
 
-  const addReview = (movie, text, rating, username) => {
-    const newReview = {
-      id: Date.now(),
-      movieId: movie.movieId,
-      movieTitle: movie.Title,
-      moviePoster: movie.Poster,
-      text,
-      rating,
-      username: username || currentUser || "Anonymous"
-    };
-    setReviews((prevReviews) => [newReview, ...prevReviews]);
+  // add a review to backend and refresh user reviews on success
+  const addReview = async (movie, text, rating) => {
+    try {
+      const response = await fetch(`http://localhost:3000/api/reviews/${movie.movieId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ rating, text })
+      });
+
+      if (response.ok) {
+        await fetchUserReviews();
+        return { success: true };
+      } else {
+        const data = await response.json();
+        return { success: false, message: data.error || 'Failed to add review.' };
+      }
+    } catch (error) {
+      console.error('Error adding review:', error.message);
+      return { success: false, message: 'Server error. Please try again.' };
+    }
   };
 
   if (!sessionChecked) return null;
@@ -351,7 +379,6 @@ export default function App() {
               addToWatchlist={addToWatchlist}
               addReview={addReview}
               watchlist={watchlist}
-              reviews={reviews}
               currentUser={currentUser}
             />
           }
