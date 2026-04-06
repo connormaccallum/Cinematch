@@ -7,6 +7,7 @@ const session = require('express-session');
 const movieRoutes = require('./routes/movieRoutes');
 const authRoutes = require('./routes/authRoutes');
 const interactionRoutes = require('./routes/interactionRoutes');
+const reviewRoutes = require('./routes/reviewRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -40,6 +41,9 @@ app.use('/api/auth', authRoutes);
 
 // interaction related routes w/ prefix /api/interactions
 app.use('/api/interactions', interactionRoutes);
+
+// review routes w/ prefix /api/reviews
+app.use('/api/reviews', reviewRoutes);
 
 // start express server
 app.listen(PORT, () => {
