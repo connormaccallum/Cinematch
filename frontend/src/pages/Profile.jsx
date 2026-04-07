@@ -1,16 +1,21 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
-export default function Profile({ currentUser, watchlist, reviews }) {
+export default function Profile({ currentUser, watchlist, reviews, onLogout }) {
   const recentActivity = watchlist.length > 0 ? [...watchlist].sort((a, b) => b.lastUpdated - a.lastUpdated)[0] : null;
 
   const recentReview = reviews.length > 0 ? reviews[0] : null;
 
   return (
     <div className="page">
-      <div className="hero">
-        <h1>Hello, {currentUser}</h1>
-        <p>Your profile and activity at a glance.</p>
+      <div className="heroSplit">
+        <div className="heroMain">
+          <h1>Hello, {currentUser}</h1>
+          <p>Your profile and activity at a glance.</p>
+        </div>
+        <div className="heroLogout">
+          <button className="logoutBtn" onClick={onLogout}>Log Out</button>
+        </div>
       </div>
 
       <section className="profileLayout">

@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import React, { useEffect, useState, useRef } from "react";
+import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import Navbar from "./components/Navbar.jsx";
 import Login from "./pages/Login.jsx";
 import Home from "./pages/Home.jsx";
@@ -21,6 +21,13 @@ function normalizeTmdbMovie(movie, imageBaseUrl) {
     Genre: "N/A",
     Director: "N/A"
   };
+}
+
+// small helper to capture useNavigate inside BrowserRouter
+function NavigateSetter({ navigateRef }) {
+  const navigate = useNavigate();
+  navigateRef.current = navigate;
+  return null;
 }
 
 export default function App() {
@@ -176,8 +183,13 @@ export default function App() {
       setIsLoggedIn(false);
       setWatchlist([]);
       setReviews([]);
+      setSearchTerm("");
+      setIsTrending(true);
+      if (navigateRef.current) navigateRef.current("/");
     }
   };
+
+  const navigateRef = useRef(null);
 
   const TMDB_TOKEN = import.meta.env.VITE_TMDB_READ_ACCESS_TOKEN;
   const TMDB_BASE_URL =
@@ -355,6 +367,7 @@ export default function App() {
 
   return (
     <BrowserRouter>
+      <NavigateSetter navigateRef={navigateRef} />
       <Navbar />
       <Routes>
         <Route
@@ -402,6 +415,7 @@ export default function App() {
               currentUser={currentUser}
               watchlist={watchlist}
               reviews={reviews}
+              onLogout={handleLogout}
             />
           }
         />
