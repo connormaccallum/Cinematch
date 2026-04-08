@@ -167,11 +167,13 @@ export default function MovieDetails({ addToWatchlist, addReview, watchlist, cur
             {movie.Year && movie.Year !== "N/A" && <p><strong>Year:</strong> {movie.Year}</p>}
             {movie.Genre && movie.Genre !== "N/A" && <p><strong>Genre:</strong> {movie.Genre}</p>}
             {movie.Director && movie.Director !== "N/A" && <p><strong>Director:</strong> {movie.Director}</p>}
-            <div className="detailActions">
-              <button className="actionBtn" type="button" onClick={handleSave}>
-                {isSaved ? "Want to Watch" : "Add to Watchlist"}
-              </button>
-            </div>
+            {!isSaved && (
+              <div className="detailActions">
+                <button className="actionBtn" type="button" onClick={handleSave}>
+                  Add to Watchlist
+                </button>
+              </div>
+            )}
             {savedMessage && <p className="successText">{savedMessage}</p>}
           </div>
         </div>
